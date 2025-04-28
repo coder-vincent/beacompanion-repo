@@ -1,0 +1,17 @@
+<form method="POST" action="">
+    <div class="input-group">
+        <i class="fa-solid fa-user"></i>
+        <input type="email" name="email" id="email" placeholder="Email" required>
+    </div>
+    <div class="input-group">
+        <i class="fa-solid fa-lock"></i>
+        <input type="password" name="password" id="password" placeholder="Password" required>
+        <i class="fa-solid fa-eye" id="eye"></i>
+    </div>
+
+    <a href="javascript:void(0)" id="forgot-password" onclick="loadPage('forgotPasswordPage')">Forgot
+        Password?</a>
+
+    <input type="submit" class="user-button" value="Login">
+
+</form>

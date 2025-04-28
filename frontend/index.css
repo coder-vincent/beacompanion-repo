@@ -1,0 +1,241 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+:root {
+  --color-navy: #002c69;
+
+  --background-color: #ffffff;
+  --background-secondary: #f5f5f5;
+  --text-color: #1a1a1a;
+  --text-color-light: #555555;
+
+  --primary-color: #3498db;
+  --secondary-color: #e74c3c;
+  --accent-color: #f1c40f;
+
+  --border-color: #dddddd;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --background-color: #121212;
+  --background-secondary: #1e1e1e;
+  --text-color: #f5f5f5;
+  --text-color-light: #bbbbbb;
+
+  --primary-color: #2980b9;
+  --secondary-color: #c0392b;
+  --accent-color: #f39c12;
+
+  --border-color: #333333;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", serif;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+a {
+  cursor: pointer;
+  text-decoration-line: none;
+}
+
+.company-name {
+  font-weight: 500;
+  width: 100%;
+  display: flex;
+  padding: 2em;
+}
+
+.company-name h2 {
+  font-weight: 500;
+}
+
+#login {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.leftDiv {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.image-container .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-color);
+  mix-blend-mode: multiply;
+  z-index: 1;
+}
+
+.text-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  color: var(--background-color);
+  text-align: center;
+  width: 100%;
+  padding: 5em;
+}
+
+.text-overlay h1 {
+  text-align: left;
+  font-weight: 500;
+  font-size: 3em;
+}
+
+.text-overlay p {
+  margin-top: 5em;
+  text-align: left;
+}
+
+.rightDiv {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.imageContainer img {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  object-fit: cover;
+}
+
+.topend-header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.paragraph-fade {
+  color: var(--text-color-light);
+}
+
+.user-creation a {
+  color: var(--color-navy);
+  font-weight: 600;
+}
+
+.user-login {
+  width: 100%;
+  padding: 2em;
+}
+
+.user-login-form {
+  width: 100%;
+  padding: 2em 3em;
+}
+
+input {
+  flex: 10;
+  color: inherit;
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  font-size: 15px;
+  padding: 1em 0.5em;
+}
+
+.input-group {
+  padding: 1% 0;
+  position: relative;
+  background-color: var(--background-secondary);
+  margin: 2em auto;
+  border-radius: 12px;
+  display: flex;
+  padding: 0.7em 0.1em;
+  border: 1px solid transparent;
+}
+
+.error {
+  position: absolute;
+  left: 2em;
+  bottom: -1em;
+}
+
+.error p {
+  color: var(--secondary-color);
+  font-weight: 500;
+  text-align: center;
+  font-size: 14px;
+}
+
+.input-group:focus-within {
+  border: 1px solid var(--color-navy);
+}
+
+.input-group i {
+  flex: 1;
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.input-group:focus-within i {
+  color: var(--color-navy);
+}
+
+.input-group.password i:first-child {
+  flex: 1.1;
+}
+
+input:focus {
+  outline: none;
+}
+
+#eye,
+.user-button,
+#forgot-password {
+  cursor: pointer;
+}
+
+#forgot-password {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.user-button {
+  background-color: var(--color-navy);
+  border-radius: 12px;
+  margin-top: 2em;
+  color: var(--background-color);
+}
