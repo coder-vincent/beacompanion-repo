@@ -47,5 +47,4 @@
             ?>
         </div>
     </div>
-    <!-- <button onclick="loadPage('signupPage')">Other Page</button> -->
 </div>

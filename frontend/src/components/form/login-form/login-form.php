@@ -1,6 +1,6 @@
-<form method="POST" action="">
+<form method="POST" id="login-form" data-action-key="userAccount">
     <div class="input-group">
-        <i class="fa-solid fa-user"></i>
+        <i class="fa-solid fa-envelope"></i>
         <input type="email" name="email" id="email" placeholder="Email" required>
     </div>
     <div class="input-group">

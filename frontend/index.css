@@ -2,6 +2,7 @@
 
 :root {
   --color-navy: #002c69;
+  --color-green: ##008000;
 
   --background-color: #ffffff;
   --background-secondary: #f5f5f5;
@@ -60,7 +61,8 @@ a {
   font-weight: 500;
 }
 
-#login {
+#login,
+#sign-up {
   width: 100vw;
   height: 100vh;
   display: grid;
@@ -175,14 +177,14 @@ input {
 }
 
 .input-group {
-  padding: 1% 0;
   position: relative;
   background-color: var(--background-secondary);
-  margin: 2em auto;
+  margin: 1em 0;
   border-radius: 12px;
   display: flex;
-  padding: 0.7em 0.1em;
+  padding: 0.7em;
   border: 1px solid transparent;
+  min-height: 3.5em;
 }
 
 .error {
@@ -233,9 +235,55 @@ input:focus {
   justify-content: flex-end;
 }
 
+.show-password-container label,
+.show-password-container input[type="checkbox"] {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.5em;
+  margin-bottom: 3em;
+}
+
+#show-password {
+  accent-color: var(--primary-color);
+  cursor: pointer;
+  width: 1.5em;
+  height: 1.5em;
+}
+
 .user-button {
   background-color: var(--color-navy);
   border-radius: 12px;
   margin-top: 2em;
   color: var(--background-color);
+}
+
+.check-icon {
+  position: absolute;
+  right: 0.75em;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
+}
+
+.check-icon i {
+  display: none;
+  font-size: 0.9em;
+  color: white;
+  border-radius: 50%;
+  padding: 0.4em;
+  transition: all 0.2s ease-in-out;
+}
+
+.check-icon i.valid {
+  display: block;
+  background-color: green;
+}
+
+.check-icon i.invalid {
+  display: block;
+  background-color: red;
 }
