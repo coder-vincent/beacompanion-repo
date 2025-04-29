@@ -1,8 +1,8 @@
-<form method="POST" id="signup-form" data-action-key="userAccount">
+<form method="POST" id="signup-form" action="userAccount" data-action-key="userAccount">
 
     <div class="input-group">
         <i class="fa-solid fa-user"></i>
-        <input type="name" name="name" id="name" placeholder="e.g. Juan Dela Cruz" required>
+        <input type="text" name="name" id="name" placeholder="e.g. Juan Dela Cruz" required>
         <span class="check-icon" id="name-check">
             <i class="fa-solid fa-check"></i>
         </span>
@@ -35,6 +35,7 @@
     </div>
 
 
-    <input type="submit" class="user-button" value="Sign Up">
+    <input type="submit" class="user-button" name="sign-up" value="Sign Up">
+
 
 </form>

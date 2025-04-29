@@ -34,6 +34,12 @@
             <h1>Create Account</h1>
         </div>
 
+        <?php
+        if (isset($errors['user_exist'])) {
+            echo '<div class="error"><p>' . $errors['user_exist'] . '</p></div>';
+        }
+        ?>
+
 
         <div class="user-login-form">
             <?php

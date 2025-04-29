@@ -1,5 +1,9 @@
 <?php
 session_start();
+
+if (isset($_SESSION['errors'])) {
+  $errors = $_SESSION['errors'];
+}
 ?>
 
 <!DOCTYPE html>
