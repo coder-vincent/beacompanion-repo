@@ -38,6 +38,15 @@
             <p class="paragraph-fade">Login to continue</p>
         </div>
 
+        <?php
+        if (isset($errors['login'])) {
+            echo '<div class="error-main">
+            <p>' . $errors['login'] . '</p>
+          </div>';
+            unset($errors['login']);
+        }
+        ?>
+
 
         <div class="user-login-form">
             <?php

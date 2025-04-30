@@ -188,6 +188,7 @@ input {
   border: 1px solid transparent;
   min-height: 3.5em;
 }
+
 .error-main {
   display: flex;
   justify-content: center;
@@ -202,7 +203,7 @@ input {
   font-weight: 500;
   text-align: left;
   font-size: 14px;
-  width: 90%;
+  width: 95%;
   padding: 1em;
   margin: 0.5em;
   border-radius: 0.5em;

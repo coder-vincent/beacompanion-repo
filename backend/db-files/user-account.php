@@ -1,6 +1,6 @@
 <?php
 require_once(__DIR__ . '/../auth/dbconnect.php');
-
+require_once(__DIR__ . '/../../config.php');
 header('Content-Type: application/json');
 session_start();
 
@@ -24,7 +24,6 @@ if (isset($_POST['signup'])) {
     $confirmPassword = $_POST['confirm-password'] ?? '';
     $createdAt = date('Y-m-d H:i:s');
 
-    // Validate inputs
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Invalid email format.';
     }
@@ -41,7 +40,6 @@ if (isset($_POST['signup'])) {
         $errors['confirm-password'] = 'Passwords do not match.';
     }
 
-    // Check if email already exists
     $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email');
     $stmt->execute(['email' => $email]);
     if ($stmt->fetch()) {
@@ -52,13 +50,15 @@ if (isset($_POST['signup'])) {
         respond(false, ['errors' => $errors]);
     }
 
-    // Insert new user
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-    $stmt = $pdo->prepare('INSERT INTO users (email, password, name, created_at) VALUES (:email, :password, :name, :created_at)');
+    $role = 'patient';
+
+    $stmt = $pdo->prepare('INSERT INTO users (email, password, name, role, created_at) VALUES (:email, :password, :name, :role, :created_at)');
     $stmt->execute([
         'email' => $email,
         'password' => $hashedPassword,
         'name' => $name,
+        'role' => $role,
         'created_at' => $createdAt
     ]);
 
@@ -66,10 +66,13 @@ if (isset($_POST['signup'])) {
 }
 
 if (isset($_POST['login'])) {
+    $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    // Validate inputs
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $adminEmail = $_ENV['ADMIN_EMAIL'] ?? '';
+    $adminPassword = $_ENV['ADMIN_PASSWORD'] ?? '';
+
+    if ($email !== $adminEmail && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Invalid email format.';
     }
 
@@ -78,28 +81,46 @@ if (isset($_POST['login'])) {
     }
 
     if (!empty($errors)) {
-        $_SESSION['errors'] = $errors;
-        respond(true, ['redirectTo' => 'loginPage']);
+        respond(false, ['errors' => $errors]);
     }
 
-    // Authenticate user
-    $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');
-    $stmt->execute(['email' => $email]);
-    $user = $stmt->fetch();
+    $adminEmail = $_ENV['ADMIN_EMAIL'] ?? '';
+    $adminPassword = $_ENV['ADMIN_PASSWORD'] ?? '';
 
-    if ($user && password_verify($password, $user['password'])) {
+    if ($email === $adminEmail && $password === $adminPassword) {
+        $_SESSION['user'] = [
+            'id' => 0,
+            'email' => $adminEmail,
+            'name' => 'Administrator',
+            'role' => 'admin',
+            'created_at' => null
+        ];
+        respond(true, ['redirectTo' => 'adminDashboard']);
+    } else {
+        $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');
+        $stmt->execute(['email' => $email]);
+        $user = $stmt->fetch();
+
+        if (!$user || !password_verify($password, $user['password'])) {
+            respond(false, ['errors' => ['login' => 'Invalid email or password.']]);
+        }
+
         $_SESSION['user'] = [
             'id' => $user['id'],
             'email' => $user['email'],
             'name' => $user['name'],
+            'role' => $user['role'],
             'created_at' => $user['created_at']
         ];
-        respond(true, ['redirectTo' => 'patientPage']);
-    }
 
-    $errors['login'] = 'Invalid email or password.';
-    $_SESSION['errors'] = $errors;
-    respond(true, ['redirectTo' => 'loginPage']);
+        $redirectTo = match ($user['role']) {
+            'admin' => 'adminDashboard',
+            'doctor' => 'doctorDashboard',
+            default => 'patientDashboard'
+        };
+
+        respond(true, ['redirectTo' => $redirectTo]);
+    }
 }
 
 respond(false, ['errors' => ['request' => 'Invalid form submission.']]);

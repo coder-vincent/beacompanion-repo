@@ -1,3 +1,4 @@
 .htaccess
+.env
 app.js
 app.css
