@@ -12,6 +12,6 @@
     <a href="javascript:void(0)" id="forgot-password" onclick="loadPage('forgotPasswordPage')">Forgot
         Password?</a>
 
-    <input type="submit" class="user-button" value="Login">
+    <input type="submit" class="user-button" name="login" value="Login">
 
 </form>

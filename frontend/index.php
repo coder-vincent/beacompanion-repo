@@ -31,4 +31,7 @@ if (isset($_SESSION['errors'])) {
 </html>
 
 <?php
+if (isset($_SESSION['errors'])) {
+  unset($_SESSION['errors']);
+}
 ?>

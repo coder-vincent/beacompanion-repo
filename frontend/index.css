@@ -156,12 +156,14 @@ a {
   font-weight: 600;
 }
 
-.user-login {
+.user-login,
+.user-create {
   width: 100%;
   padding: 2em;
 }
 
-.user-login-form {
+.user-login-form,
+.user-create-form {
   width: 100%;
   padding: 2em 3em;
 }
@@ -186,8 +188,7 @@ input {
   border: 1px solid transparent;
   min-height: 3.5em;
 }
-
-.error {
+.error-main {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -195,15 +196,15 @@ input {
   text-align: left;
 }
 
-.error p {
+.error-main p {
   color: var(--background-color);
   background-color: var(--secondary-color);
   font-weight: 500;
   text-align: left;
   font-size: 14px;
-  width: 100%;
+  width: 90%;
   padding: 1em;
-  margin: 2em;
+  margin: 0.5em;
   border-radius: 0.5em;
 }
 

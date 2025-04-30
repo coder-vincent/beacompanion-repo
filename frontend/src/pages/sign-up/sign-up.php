@@ -30,18 +30,18 @@
             <h2>BEACompanion</h2>
         </div>
 
-        <div class="user-login">
+        <div class="user-create">
             <h1>Create Account</h1>
         </div>
 
         <?php
         if (isset($errors['user_exist'])) {
-            echo '<div class="error"><p>' . $errors['user_exist'] . '</p></div>';
+            echo '<div class="error-main"><p>' . $errors['user_exist'] . '</p></div>';
         }
         ?>
 
 
-        <div class="user-login-form">
+        <div class="user-create-form">
             <?php
 
             include($_SERVER['DOCUMENT_ROOT'] . '/thesis_project/frontend/src/components/form/signup-form/signup-form.php');
