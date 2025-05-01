@@ -1,3 +1,11 @@
+<?php
+
+if (isset($_SESSION['errors'])) {
+    $errors = $_SESSION['errors'];
+}
+
+?>
+
 <div id="sign-up">
 
     <!-- Left Container -->
@@ -14,10 +22,6 @@
                     <a href="javascript:void(0)" onclick="loadPage('loginPage')">Sign In</a>
                 </span>
             </p>
-        </div>
-
-        <div class="company-name">
-            <h2>BEACompanion</h2>
         </div>
 
         <div class="user-create">
@@ -40,3 +44,9 @@
         </div>
     </div>
 </div>
+
+<?php
+if (isset($_SESSION['errors'])) {
+    unset($_SESSION['errors']);
+}
+?>

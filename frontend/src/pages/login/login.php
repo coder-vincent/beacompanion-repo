@@ -1,3 +1,11 @@
+<?php
+
+if (isset($_SESSION['errors'])) {
+    $errors = $_SESSION['errors'];
+}
+
+?>
+
 <div id="login">
 
     <!-- Left Container -->
@@ -44,3 +52,9 @@
         </div>
     </div>
 </div>
+
+<?php
+if (isset($_SESSION['errors'])) {
+    unset($_SESSION['errors']);
+}
+?>

@@ -1,9 +1,7 @@
 <?php
 session_start();
 
-if (isset($_SESSION['errors'])) {
-  $errors = $_SESSION['errors'];
-}
+
 
 ?>
 
@@ -18,6 +16,8 @@ if (isset($_SESSION['errors'])) {
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
 </head>
 
 <body>
@@ -29,9 +29,3 @@ if (isset($_SESSION['errors'])) {
 </body>
 
 </html>
-
-<?php
-if (isset($_SESSION['errors'])) {
-  unset($_SESSION['errors']);
-}
-?>

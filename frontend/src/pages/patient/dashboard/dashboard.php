@@ -1,30 +1,33 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['user'])) {
+    header('Location: loginPage');
+    exit;
+}
+
+$fullName = $_SESSION['user']['name'];
+$firstName = explode(' ', trim($fullName))[0];
+?>
+
 <div id="patient-page">
     <div class="welcome-reveal">
         <div class="welcome-container">
-            <div class="welcome-loader">Hi user! You've successfully created an account.</div>
+            <div class="welcome-loader">
+                <h1>Hi, <?php echo htmlspecialchars($firstName); ?>!👋</h1>
+            </div>
             <div class="welcome-overlay">
-                <div class="block block-1"></div>
-                <div class="block block-2"></div>
-                <div class="block block-3"></div>
-                <div class="block block-4"></div>
-                <div class="block block-5"></div>
-                <div class="block block-6"></div>
-                <div class="block block-7"></div>
-                <div class="block block-8"></div>
-                <div class="block block-9"></div>
-                <div class="block block-10"></div>
-                <div class="block block-11"></div>
-                <div class="block block-12"></div>
-                <div class="block block-13"></div>
-                <div class="block block-14"></div>
-                <div class="block block-15"></div>
-                <div class="block block-16"></div>
-                <div class="block block-17"></div>
-                <div class="block block-18"></div>
-                <div class="block block-19"></div>
-                <div class="block block-20"></div>
+                <?php
+                for ($i = 1; $i <= 20; $i++) {
+                    echo "<div class='block block-$i'></div>";
+                }
+                ?>
             </div>
         </div>
     </div>
+    <h2>You are now logged in</h2>
 
+    <div id="patient-dashboard">
+        <h3>Hello, <?php echo htmlspecialchars($firstName); ?>!</h3>
+    </div>
 </div>
