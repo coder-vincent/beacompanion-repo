@@ -296,3 +296,10 @@ input:focus {
   display: block;
   background-color: red;
 }
+
+.welcome-reveal {
+  width: 100vw;
+  height: 100vh;
+  background: var(--background-color);
+  color: var(--text-color);
+}
