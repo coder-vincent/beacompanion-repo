@@ -62,7 +62,7 @@ if (isset($_POST['signup'])) {
         'created_at' => $createdAt
     ]);
 
-    respond(true, ['redirectTo' => 'loginPage']);
+    respond(true, ['redirectTo' => 'patientDashboard']);
 }
 
 if (isset($_POST['login'])) {
