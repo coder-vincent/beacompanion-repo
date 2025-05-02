@@ -24,7 +24,7 @@
         ?>
     </div>
 
-    <a href="javascript:void(0)" id="forgot-password" onclick="loadPage('forgotPasswordPage')">Forgot
+    <a href="javascript:void(0)" onclick="loadPage('forgotPasswordPage')">Forgot
         Password?</a>
 
     <input type="submit" class="user-button" name="login" value="Login">

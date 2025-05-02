@@ -1,3 +1,12 @@
 <div id="forgot-password">
-    <h1>You are on forgot password page</h1>
+
+    <!-- Left Container -->
+    <?php include '../../components/hero/hero-section.php'; ?>
+
+    <!-- Right Container -->
+    <div class="rightDiv">
+
+        <h1>Hello World</h1>
+    </div>
+
 </div>

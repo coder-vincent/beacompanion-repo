@@ -65,7 +65,8 @@ a {
 }
 
 #login,
-#sign-up {
+#sign-up,
+#forgot-password {
   width: 100vw;
   height: 100vh;
   display: grid;
@@ -132,6 +133,8 @@ a {
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  width: 100%;
+  height: 100vh;
 }
 
 .imageContainer img {
