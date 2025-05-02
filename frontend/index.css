@@ -40,10 +40,6 @@
 
 html,
 body {
-  /* display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh; */
   width: 100%;
   height: 100vh;
 }
@@ -66,29 +62,87 @@ a {
 
 #login,
 #sign-up,
-#forgot-password {
+#forgot-password-page {
   width: 100vw;
   height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 
-.leftDiv {
-  position: relative;
+.leftDiv,
+.rightDiv {
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
+  height: 100%;
+}
+
+.rightDiv {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.topend-header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.paragraph-fade {
+  color: var(--text-color-light);
+  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+}
+
+.user-back {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 1rem;
+}
+
+.user-back a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-navy);
+  font-weight: 600;
+  font-size: 2rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: solid 5px var(--color-navy);
+  text-decoration: none;
+}
+
+.back-text {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: none;
+  color: var(--color-navy);
+  font-weight: 600;
+  cursor: default;
+  user-select: none;
 }
 
 .image-container {
   position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 .image-container img {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
@@ -112,29 +166,23 @@ a {
   z-index: 2;
   color: var(--background-color);
   text-align: center;
-  width: 100%;
-  padding: 5em;
+  width: 90%;
+  max-width: 500px;
+  padding: clamp(1em, 5vw, 3em);
+  box-sizing: border-box;
 }
 
 .text-overlay h1 {
   text-align: left;
   font-weight: 500;
-  font-size: 3em;
+  font-size: clamp(1.5em, 4vw, 3em);
 }
 
 .text-overlay p {
-  margin-top: 5em;
+  margin-top: clamp(1em, 5vh, 3em);
   text-align: left;
-}
-
-.rightDiv {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  width: 100%;
-  height: 100vh;
+  font-size: clamp(0.9em, 2vw, 1.2em);
+  line-height: 1.4;
 }
 
 .imageContainer img {
@@ -144,27 +192,14 @@ a {
   object-fit: cover;
 }
 
-.topend-header {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 1rem;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.paragraph-fade {
-  color: var(--text-color-light);
-}
-
 .user-creation a {
   color: var(--color-navy);
   font-weight: 600;
 }
 
 .user-login,
-.user-create {
+.user-create,
+.user-forgot-password {
   width: 100%;
   padding-left: 2em;
 }
@@ -209,7 +244,7 @@ input {
   background-color: var(--secondary-color);
   font-weight: 500;
   text-align: left;
-  font-size: 14px;
+  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
   width: 95%;
   padding: 1em;
   margin: 0.5em;
@@ -305,7 +340,6 @@ input:focus {
 }
 
 #patient-page {
-  /* background: red; */
   overflow: hidden;
 }
 
@@ -325,14 +359,12 @@ input:focus {
   transform: translate(-50%, -50%);
   text-transform: uppercase;
   font-size: 1em;
-  /* z-index: 10; */
 }
 
 .welcome-overlay {
   width: 100%;
   height: 100vh;
   position: relative;
-  /* z-index: 5; */
 }
 
 .block {
@@ -341,7 +373,6 @@ input:focus {
   height: 100vh;
   width: 5%;
   background: white;
-  /* z-index: 4; */
 }
 
 .block-1 {
