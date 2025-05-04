@@ -1,14 +1,18 @@
 <?php
+
 session_start();
 
-if (!isset($_SESSION['user'])) {
-    header('Location: loginPage');
-    exit;
-}
+echo '<pre>';
+print_r($_SESSION['user']);
+echo '</pre>';
+
 
 $fullName = $_SESSION['user']['name'];
 $firstName = explode(' ', trim($fullName))[0];
+$authToken = $_SESSION['auth_token'] ?? 'Unavailable';
+
 ?>
+
 
 <div id="patient-page">
     <div class="welcome-reveal">
