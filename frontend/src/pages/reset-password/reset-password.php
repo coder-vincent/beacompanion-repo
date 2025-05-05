@@ -1,33 +1,52 @@
 <?php
 session_start();
+date_default_timezone_set('Asia/Manila');
+require_once(__DIR__ . '/../../../auth/dbconnect.php');
 
-// Debug output (for development only — remove or restrict in production)
 echo '<pre>';
-print_r($_SESSION['reset_process']);
+print_r($_SESSION['user_reset_pass'] ?? 'No user session');
 echo '</pre>';
 
-// Safely retrieve user full name
-$fullName = $_SESSION['user']['name'] ?? 'Guest';
-$firstName = explode(' ', trim($fullName))[0] ?? 'Guest';
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['token'])) {
+    $providedToken = $_GET['token'];
 
-// Retrieve reset token if available
-$authToken = $_SESSION['reset_process']['generated_token'] ?? 'Unavailable';
-$tokenFromUrl = $_GET['token'] ?? '';
+    $stmt = $pdo->prepare('SELECT id, email, name, role, reset_token, reset_token_expiry FROM users WHERE reset_token IS NOT NULL');
+    $stmt->execute();
 
-// Check if the token from the URL matches the token in the session
-if (empty($tokenFromUrl) || $tokenFromUrl !== $authToken) {
-    // Redirect to login page if token is invalid
-    header("Location: /thesis_project/login.php");  // Update with the correct base path
-    exit();
+    $user = null;
+    while ($row = $stmt->fetch()) {
+        if (password_verify($providedToken, $row['reset_token'])) {
+            if (strtotime($row['reset_token_expiry']) >= time()) {
+                $user = $row;
+                break;
+            }
+        }
+    }
 
+    if (!$user) {
+        echo '<script>window.location.href = "/thesis_project";</script>';
+        exit();
+    }
+
+    $_SESSION['user_reset_pass'] = [
+        'id' => $user['id'],
+        'email' => $user['email'],
+        'name' => $user['name'],
+        'role' => $user['role'],
+        'plain_token' => $providedToken,
+    ];
 }
 
-// If the token is valid, you can proceed with further logic for password reset
-?>
+$fullName = $_SESSION['user_reset_pass']['name'] ?? 'Guest';
+$firstName = explode(' ', trim($fullName))[0] ?? 'Guest';
+$userRole = $_SESSION['user_reset_pass']['role'] ?? 'guest';
 
+echo "Welcome, " . htmlspecialchars($firstName) . "!";
+echo "<br>Role: " . htmlspecialchars($userRole);
+
+?>
 
 <div id="reset-password">
     <h1>Welcome, <?php echo htmlspecialchars($firstName); ?>!</h1>
     <p>You are on the reset password page.</p>
-    <p>Your reset token (for debugging): <code><?php echo htmlspecialchars($authToken); ?></code></p>
 </div>

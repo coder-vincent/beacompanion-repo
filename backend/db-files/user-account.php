@@ -1,6 +1,5 @@
 <?php
 ob_start();
-date_default_timezone_set('Asia/Manila');
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -8,7 +7,6 @@ error_reporting(E_ALL);
 session_start();
 
 require_once(__DIR__ . '/../auth/dbconnect.php');
-require_once(__DIR__ . '/../../config.php');
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -16,44 +14,28 @@ use PHPMailer\PHPMailer\Exception;
 header('Content-Type: application/json');
 
 if (!class_exists('\PHPMailer\PHPMailer\PHPMailer')) {
-    echo json_encode(['success' => false, 'error' => 'PHPMailer is not available. Check autoload or installation.']);
+    echo json_encode(['success' => false, 'error' => 'PHPMailer is not available.']);
     exit;
 }
 
-$errors = [];
-
-// Function to respond with JSON output
 function respond($success, $data = [])
 {
     echo json_encode(array_merge(['success' => $success], $data));
     exit;
 }
 
-// === Ensure No Session Conflict ===
 function resetSessionIfNeeded($expectedUserId = null)
 {
-    // Check if there is an active session with a different user and reset it
-    if (isset($_SESSION['user']) && ($expectedUserId === null || $_SESSION['user']['id'] != $expectedUserId)) {
+    if (isset($_SESSION['user_reset_pass']) && ($expectedUserId === null || $_SESSION['user_reset_pass']['id'] != $expectedUserId)) {
         session_unset();
         session_destroy();
-        session_start(); // Start a new session
+        session_start();
     }
 }
 
-// === Handle Forgot Password ===
+// === Forgot Password ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-password'])) {
-
     $email = filter_input(INPUT_POST, 'forgot-password-email', FILTER_SANITIZE_EMAIL);
-
-    $_SESSION['reset_process'] = [
-        'submitted_email' => $email,
-        'is_email_valid' => null,
-        'user_found' => null,
-        'generated_token' => null,
-        'token_expiry' => null,
-        'reset_link' => null,
-        'mail_error' => null
-    ];
 
     if (empty($email)) {
         respond(false, [
@@ -63,20 +45,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-password'])) {
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $_SESSION['reset_process']['is_email_valid'] = false;
         respond(false, [
             'errors' => ['forgot-password-email' => 'Invalid email format.'],
             'message' => 'Please fix the errors and try again.'
         ]);
-    } else {
-        $_SESSION['reset_process']['is_email_valid'] = true;
     }
 
-    $stmt = $pdo->prepare('SELECT id, email, name, role, created_at, auth_token, auth_token_expiry FROM users WHERE email = :email');
+    $stmt = $pdo->prepare('SELECT id, email, name, role FROM users WHERE email = :email');
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch();
-
-    $_SESSION['reset_process']['user_found'] = (bool) $user;
 
     if (!$user) {
         respond(false, [
@@ -85,57 +62,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-password'])) {
         ]);
     }
 
-    // Check for session conflict and reset if needed
-    resetSessionIfNeeded($user['id']);
+    if (!isset($_SESSION['user_reset_pass'])) {
+        $_SESSION['user_reset_pass'] = [
+            'id' => $user['id'],
+            'email' => $user['email'],
+            'name' => $user['name'],
+            'role' => $user['role'],
+        ];
+    }
 
     session_regenerate_id(true);
-    $_SESSION['user'] = [
-        'id' => $user['id'],
-        'email' => $user['email'],
-        'name' => $user['name'],
-        'role' => $user['role'],
-        'created_at' => $user['created_at'],
-        'token' => $user['auth_token'],
-        'expiry' => $user['auth_token_expiry'],
-    ];
 
     $token = bin2hex(random_bytes(32));
+    $tokenHash = password_hash($token, PASSWORD_BCRYPT);
     $expiry = date('Y-m-d H:i:s', time() + 3600);
 
-    $_SESSION['reset_process']['generated_token'] = $token;
-    $_SESSION['reset_process']['token_expiry'] = $expiry;
-
     $stmt = $pdo->prepare('UPDATE users SET reset_token = :token, reset_token_expiry = :expiry WHERE email = :email');
-    $stmt->execute([
-        'token' => $token,
-        'expiry' => $expiry,
-        'email' => $email
-    ]);
+    $stmt->execute(['token' => $tokenHash, 'expiry' => $expiry, 'email' => $email]);
 
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'];
     $basePath = (strpos($host, 'localhost') !== false) ? '/thesis_project' : '';
     $resetLink = "{$protocol}://{$host}{$basePath}/reset-password?token=" . urlencode($token);
 
-    $_SESSION['reset_process']['reset_link'] = $resetLink;
-
     $mail = new PHPMailer(true);
-    $smtpHost = $_ENV['SMTP_HOST'] ?? '';
-    $smtpUser = $_ENV['SMTP_USER'] ?? '';
-    $smtpPass = $_ENV['SMTP_PASS'] ?? '';
-    $smtpFromEmail = $_ENV['SMTP_FROM_EMAIL'] ?? '';
-    $smtpFromName = $_ENV['SMTP_FROM_NAME'] ?? '';
-
     try {
         $mail->isSMTP();
-        $mail->Host = $smtpHost;
+        $mail->Host = $_ENV['SMTP_HOST'] ?? '';
         $mail->SMTPAuth = true;
-        $mail->Username = $smtpUser;
-        $mail->Password = $smtpPass;
+        $mail->Username = $_ENV['SMTP_USER'] ?? '';
+        $mail->Password = $_ENV['SMTP_PASS'] ?? '';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
-        $mail->setFrom($smtpFromEmail, $smtpFromName);
+        $mail->setFrom($_ENV['SMTP_FROM_EMAIL'] ?? '', $_ENV['SMTP_FROM_NAME'] ?? '');
         $mail->addAddress($email);
 
         $mail->isHTML(true);
@@ -144,26 +104,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-password'])) {
 
         $mail->send();
 
+        unset($_SESSION['user_reset_pass']);
         respond(true, ['message' => 'Password reset instructions have been sent to your email.']);
-
     } catch (Exception $e) {
-        $_SESSION['reset_process']['mail_error'] = $mail->ErrorInfo;
-
-        respond(false, [
-            'errors' => ['mail' => "Email could not be sent. Mailer Error: {$mail->ErrorInfo}"],
-            'message' => 'An error occurred while sending the reset link.'
-        ]);
+        respond(false, ['errors' => ['mail' => 'Email could not be sent.']]);
     }
 }
 
 
-// === Handle Signup ===
+// === Signup ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
     $name = trim($_POST['name'] ?? '');
     $password = $_POST['create-password'] ?? '';
     $confirmPassword = $_POST['confirm-password'] ?? '';
     $createdAt = date('Y-m-d H:i:s');
+
+    $errors = [];
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Invalid email format.';
@@ -174,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
     }
 
     if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/', $password)) {
-        $errors['create-password'] = 'Password must include upper, lower, number, and symbol, and be at least 8 characters.';
+        $errors['create-password'] = 'Password must include upper, lower, number, symbol, and be at least 8 characters.';
     }
 
     if ($password !== $confirmPassword) {
@@ -184,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
     $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email');
     $stmt->execute(['email' => $email]);
     if ($stmt->fetch()) {
-        $errors['users_exist'] = 'Email is already registered.';
+        $errors['email_taken'] = 'Email is already registered.';
     }
 
     if (!empty($errors)) {
@@ -194,7 +151,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
     try {
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
         $role = 'patient';
-
         $authToken = bin2hex(random_bytes(32));
         $authTokenExpiry = date('Y-m-d H:i:s', time() + 3600);
         $hashedAuthToken = password_hash($authToken, PASSWORD_BCRYPT);
@@ -207,33 +163,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
             'role' => $role,
             'created_at' => $createdAt,
             'token' => $hashedAuthToken,
-            'expiry' => $authTokenExpiry,
+            'expiry' => $authTokenExpiry
         ]);
 
-        session_regenerate_id(true);
+        if (!isset($_SESSION['user'])) {
+            resetSessionIfNeeded($user['id']);
+        }
 
+        session_regenerate_id(true);
         $_SESSION['user'] = [
             'id' => $pdo->lastInsertId(),
             'email' => $email,
             'name' => $name,
             'role' => $role,
             'created_at' => $createdAt,
-            'token' => $hashedAuthToken,
-            'expiry' => $authTokenExpiry,
+            'plain_token' => $authToken,
         ];
 
-        $redirectTo = "patient/auth-token?token=" . urlencode($authToken);
-        respond(true, ['redirectTo' => $redirectTo]);
-
+        respond(true, ['redirectTo' => "patient/auth-token?token=" . urlencode($authToken)]);
     } catch (Exception $e) {
         respond(false, ['errors' => ['database' => 'An error occurred while processing your request.']]);
     }
 }
 
-
-// === Handle Login ===
+// === Login ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $email = $_POST['email'] ?? '';
+    $email = filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'] ?? '';
 
     $adminEmail = $_ENV['ADMIN_EMAIL'] ?? '';
@@ -255,75 +210,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
     if ($email === $adminEmail && $password === $adminPassword) {
         session_regenerate_id(true);
+        $authToken = bin2hex(random_bytes(32));
+        $authTokenExpiry = date('Y-m-d H:i:s', time() + 3600);
+        $hashedAuthToken = password_hash($authToken, PASSWORD_BCRYPT);
+
+        $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry WHERE email = :email');
+        $stmt->execute([
+            'token' => $hashedAuthToken,
+            'expiry' => $authTokenExpiry,
+            'email' => $adminEmail
+        ]);
+
         $_SESSION['user'] = [
             'id' => 0,
             'email' => $adminEmail,
             'name' => 'Administrator',
             'role' => 'admin',
-            'created_at' => null
+            'created_at' => null,
+            'plain_token' => $authToken,
         ];
 
-        $authToken = bin2hex(random_bytes(32));
-        $authTokenExpiry = date('Y-m-d H:i:s', time() + 3600);
-        $hashedAuthToken = password_hash($authToken, PASSWORD_BCRYPT);
-
-        try {
-            $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry WHERE email = :email');
-            $stmt->execute([
-                'token' => $hashedAuthToken,
-                'expiry' => $authTokenExpiry,
-                'email' => $adminEmail
-            ]);
-
-            $redirectTo = "admin/auth-token?token=" . urlencode($authToken);
-            respond(true, ['redirectTo' => $redirectTo]);
-
-        } catch (Exception $e) {
-            respond(false, ['errors' => ['database' => 'An error occurred while processing your request.']]);
-        }
-
-    } else {
-        $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');
-        $stmt->execute(['email' => $email]);
-        $user = $stmt->fetch();
-
-        if (!$user || !password_verify($password, $user['password'])) {
-            respond(false, ['errors' => ['login' => 'Invalid email or password.']]);
-        }
-
-        // Check for session conflict and reset if needed
-        resetSessionIfNeeded($user['id']);
-
-        session_regenerate_id(true);
-        $_SESSION['user'] = [
-            'id' => $user['id'],
-            'email' => $user['email'],
-            'name' => $user['name'],
-            'role' => $user['role'],
-            'created_at' => $user['created_at'],
-            'token' => $user['auth_token'],
-            'expiry' => $user['auth_token_expiry'],
-        ];
-
-        $authToken = bin2hex(random_bytes(32));
-        $authTokenExpiry = date('Y-m-d H:i:s', time() + 3600);
-        $hashedAuthToken = password_hash($authToken, PASSWORD_BCRYPT);
-
-        try {
-            $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry WHERE email = :email');
-            $stmt->execute([
-                'token' => $hashedAuthToken,
-                'expiry' => $authTokenExpiry,
-                'email' => $email
-            ]);
-
-            $redirectTo = $_SESSION['user']['role'] . "/auth-token?token=" . urlencode($authToken);
-            respond(true, ['redirectTo' => $redirectTo]);
-
-        } catch (Exception $e) {
-            respond(false, ['errors' => ['database' => 'An error occurred while processing your request.']]);
-        }
+        respond(true, ['redirectTo' => "admin/auth-token?token=" . urlencode($authToken)]);
     }
+
+    $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');
+    $stmt->execute(['email' => $email]);
+    $user = $stmt->fetch();
+
+    if (!$user || !password_verify($password, $user['password'])) {
+        respond(false, ['errors' => ['login' => 'Invalid email or password.']]);
+    }
+
+    if (!isset($_SESSION['user'])) {
+        resetSessionIfNeeded($user['id']);
+    }
+    session_regenerate_id(true);
+
+    $authToken = bin2hex(random_bytes(32));
+    $authTokenExpiry = date('Y-m-d H:i:s', time() + 3600);
+    $hashedAuthToken = password_hash($authToken, PASSWORD_BCRYPT);
+
+    $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry WHERE email = :email');
+    $stmt->execute([
+        'token' => $hashedAuthToken,
+        'expiry' => $authTokenExpiry,
+        'email' => $email
+    ]);
+
+    $_SESSION['user'] = [
+        'id' => $user['id'],
+        'email' => $user['email'],
+        'name' => $user['name'],
+        'role' => $user['role'],
+        'created_at' => $user['created_at'],
+        'plain_token' => $authToken,
+    ];
+
+    respond(true, ['redirectTo' => $user['role'] . "/auth-token?token=" . urlencode($authToken)]);
 }
 
 respond(false, ['errors' => ['request' => 'Invalid form submission.']]);

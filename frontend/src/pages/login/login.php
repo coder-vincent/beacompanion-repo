@@ -1,8 +1,8 @@
 <?php
 
-if (isset($_SESSION['errors'])) {
-    $errors = $_SESSION['errors'];
-}
+// if (isset($_SESSION['errors'])) {
+//     $errors = $_SESSION['errors'];
+// }
 
 ?>
 
