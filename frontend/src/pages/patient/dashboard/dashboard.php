@@ -23,12 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['token'])) {
     }
 
     if (!$user) {
-        // Redirect to home if token is invalid or expired
         echo '<script>window.location.href = "/thesis_project";</script>';
         exit();
     }
 
-    // Valid token; create session
     $_SESSION['user'] = [
         'id' => $user['id'],
         'email' => $user['email'],

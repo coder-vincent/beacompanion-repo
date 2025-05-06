@@ -81,7 +81,7 @@ a {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
   height: 100%;
 }
 
@@ -89,10 +89,13 @@ a {
   position: absolute;
   top: 0;
   right: 0;
+  width: 100%;
   padding: 1rem;
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  background-color: var(--background-color);
+  z-index: 10;
 }
 
 .paragraph-fade {
@@ -203,7 +206,7 @@ a {
 .user-forgot-password,
 .user-reset-password {
   width: 100%;
-  padding-left: 2em;
+  padding: 2em;
 }
 
 .user-login-form,
@@ -211,7 +214,7 @@ a {
 .user-forgot-password-form,
 .user-reset-password-form {
   width: 100%;
-  padding: 1em 2em;
+  padding: 2em;
 }
 
 input {
@@ -249,7 +252,7 @@ input {
   font-weight: 500;
   text-align: left;
   font-size: clamp(0.9rem, 1.2vw, 1.1rem);
-  width: 95%;
+  width: 100%;
   padding: 1em;
   margin: 0.5em;
   border-radius: 0.5em;
@@ -269,7 +272,7 @@ input {
   font-weight: 500;
   text-align: left;
   font-size: clamp(0.9rem, 1.2vw, 1.1rem);
-  width: 95%;
+  width: 100%;
   padding: 1em;
   margin: 0.5em;
   border-radius: 0.5em;
@@ -481,4 +484,123 @@ input:focus {
 
 #patient-dashboard {
   display: none;
+}
+
+@media screen and (max-width: 1024px) {
+  #login,
+  #sign-up,
+  #forgot-password-page,
+  #reset-password {
+    grid-template-columns: 1fr;
+  }
+
+  /* .rightDiv {
+    position: relative;
+    width: 100%;
+    backdrop-filter: blur(8px);
+    background-size: cover;
+    background-position: center;
+    padding: 1em;
+    background-image: url("/thesis_project/frontend/src/assets/images/weak-hero.jpg");
+    height: auto;
+  } */
+
+  .rightDiv {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    background-image: url("/thesis_project/frontend/src/assets/images/weak-hero.jpg");
+    background-size: cover;
+    background-position: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 5rem;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px;
+  }
+
+  .rightDiv::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(162, 210, 233, 0.486);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    margin: 0;
+    z-index: -1;
+  }
+
+  .paragraph-fade {
+    color: #1a1a1a;
+  }
+
+  .user-login,
+  .user-create,
+  .user-forgot-password,
+  .user-reset-password {
+    margin: 0;
+    padding: 0;
+  }
+
+  .company-name {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+  }
+
+  .leftDiv {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  #login,
+  #sign-up,
+  #forgot-password-page,
+  #reset-password {
+    grid-template-columns: 1fr;
+  }
+
+  .user-create {
+    margin-top: 5em;
+  }
+
+  .user-login,
+  .user-create,
+  .user-forgot-password,
+  .user-reset-password {
+    font-size: 1rem;
+    padding: 1em;
+  }
+
+  .rightDiv {
+    width: 100%;
+    backdrop-filter: blur(5px);
+    padding: 0;
+    position: relative;
+    height: auto;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .company-name {
+    padding: 1em;
+  }
+
+  .user-login-form,
+  .user-create-form,
+  .user-forgot-password-form,
+  .user-reset-password-form {
+    padding: 1em;
+    margin: 0;
+  }
+
+  .user-button {
+    width: 100%;
+  }
 }

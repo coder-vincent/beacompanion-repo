@@ -54,20 +54,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-password'])) {
         respond(false, ['errors' => ['forgot-password-email' => 'No account found with that email.'], 'message' => 'Please fix the errors and try again.']);
     }
 
-    // Generate reset token
     $token = bin2hex(random_bytes(32));
     $tokenHash = password_hash($token, PASSWORD_BCRYPT);
-    $expiry = date('Y-m-d H:i:s', time() + 3600); // 1 hour expiration
+    $expiry = date('Y-m-d H:i:s', time() + 3600);
 
-    // Store token in the database
     $stmt = $pdo->prepare('UPDATE users SET reset_token = :token, reset_token_expiry = :expiry WHERE email = :email');
     $stmt->execute(['token' => $tokenHash, 'expiry' => $expiry, 'email' => $email]);
 
-    // Set the session with user data and token
-    session_regenerate_id(true); // Regenerate session ID to prevent session fixation attacks
+    session_regenerate_id(true);
     $_SESSION['user_reset_pass'] = ['id' => $user['id'], 'email' => $user['email'], 'name' => $user['name'], 'role' => $user['role'], 'token' => $token];
 
-    // Generate password reset URL
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'];
     $basePath = (strpos($host, 'localhost') !== false) ? '/thesis_project' : '';
@@ -118,7 +114,6 @@ if (isset($_POST['change-password'])) {
         respond(false, ['errors' => $errors]);
     }
 
-    // Fetch user using session
     $userSession = $_SESSION['user_reset_pass'] ?? null;
     if (!$userSession || empty($token)) {
         respond(false, ['errors' => ['session' => 'Session or token missing.']]);
@@ -132,12 +127,10 @@ if (isset($_POST['change-password'])) {
         respond(false, ['errors' => ['token' => 'Invalid or expired token.']]);
     }
 
-    // Update password
     $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
     $stmt = $pdo->prepare('UPDATE users SET password = :password, reset_token = NULL, reset_token_expiry = NULL WHERE id = :id');
     $stmt->execute(['password' => $hashedPassword, 'id' => $user['id']]);
 
-    // Clear session
     unset($_SESSION['user_reset_pass']);
     session_regenerate_id(true);
 

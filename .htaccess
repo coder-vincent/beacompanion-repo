@@ -1,0 +1,23 @@
+DirectoryIndex frontend/index.php
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /thesis_project/
+
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # RewriteRule ^reset-password$ frontend/src/pages/reset-password/reset-password.php [L,QSA]
+
+  # RewriteRule ^login$ frontend/src/pages/login/login.php [L,QSA]
+
+  RewriteRule ^(admin|doctor|patient)/auth-token$ frontend/index.php [QSA,L]
+  RewriteRule ^(admin|doctor|patient)$ frontend/index.php [QSA,L]
+
+  RewriteRule ^ frontend/index.php [L]
+
+  Options -Indexes
+</IfModule>
+
+ErrorDocument 404 /thesis_project/frontend/index.php
