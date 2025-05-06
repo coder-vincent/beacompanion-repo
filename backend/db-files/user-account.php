@@ -1,5 +1,6 @@
 <?php
 ob_start();
+date_default_timezone_set('Asia/Manila');
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -33,22 +34,16 @@ function resetSessionIfNeeded($expectedUserId = null)
     }
 }
 
-// === Forgot Password ===
+// === Password Reset Request ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-password'])) {
     $email = filter_input(INPUT_POST, 'forgot-password-email', FILTER_SANITIZE_EMAIL);
 
     if (empty($email)) {
-        respond(false, [
-            'errors' => ['forgot-password-email' => 'Email is required.'],
-            'message' => 'Please fix the errors and try again.'
-        ]);
+        respond(false, ['errors' => ['forgot-password-email' => 'Email is required.'], 'message' => 'Please fix the errors and try again.']);
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        respond(false, [
-            'errors' => ['forgot-password-email' => 'Invalid email format.'],
-            'message' => 'Please fix the errors and try again.'
-        ]);
+        respond(false, ['errors' => ['forgot-password-email' => 'Invalid email format.'], 'message' => 'Please fix the errors and try again.']);
     }
 
     $stmt = $pdo->prepare('SELECT id, email, name, role FROM users WHERE email = :email');
@@ -56,30 +51,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-password'])) {
     $user = $stmt->fetch();
 
     if (!$user) {
-        respond(false, [
-            'errors' => ['forgot-password-email' => 'No account found with that email.'],
-            'message' => 'Please fix the errors and try again.'
-        ]);
+        respond(false, ['errors' => ['forgot-password-email' => 'No account found with that email.'], 'message' => 'Please fix the errors and try again.']);
     }
 
-    if (!isset($_SESSION['user_reset_pass'])) {
-        $_SESSION['user_reset_pass'] = [
-            'id' => $user['id'],
-            'email' => $user['email'],
-            'name' => $user['name'],
-            'role' => $user['role'],
-        ];
-    }
-
-    session_regenerate_id(true);
-
+    // Generate reset token
     $token = bin2hex(random_bytes(32));
     $tokenHash = password_hash($token, PASSWORD_BCRYPT);
-    $expiry = date('Y-m-d H:i:s', time() + 3600);
+    $expiry = date('Y-m-d H:i:s', time() + 3600); // 1 hour expiration
 
+    // Store token in the database
     $stmt = $pdo->prepare('UPDATE users SET reset_token = :token, reset_token_expiry = :expiry WHERE email = :email');
     $stmt->execute(['token' => $tokenHash, 'expiry' => $expiry, 'email' => $email]);
 
+    // Set the session with user data and token
+    session_regenerate_id(true); // Regenerate session ID to prevent session fixation attacks
+    $_SESSION['user_reset_pass'] = ['id' => $user['id'], 'email' => $user['email'], 'name' => $user['name'], 'role' => $user['role'], 'token' => $token];
+
+    // Generate password reset URL
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'];
     $basePath = (strpos($host, 'localhost') !== false) ? '/thesis_project' : '';
@@ -104,13 +92,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-password'])) {
 
         $mail->send();
 
-        unset($_SESSION['user_reset_pass']);
         respond(true, ['message' => 'Password reset instructions have been sent to your email.']);
     } catch (Exception $e) {
         respond(false, ['errors' => ['mail' => 'Email could not be sent.']]);
     }
 }
 
+// === Reset Password ===
+if (isset($_POST['change-password'])) {
+    $token = $_POST['token'] ?? '';
+    $newPassword = $_POST['new-password'] ?? '';
+    $confirmPassword = $_POST['confirm-new-password'] ?? '';
+
+    $errors = [];
+
+    if (empty($newPassword) || empty($confirmPassword)) {
+        $errors['password'] = 'Both password fields are required.';
+    } elseif ($newPassword !== $confirmPassword) {
+        $errors['confirm_password'] = 'Passwords do not match.';
+    } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $newPassword)) {
+        $errors['password'] = 'Password must be at least 8 characters and include upper/lowercase, number, and symbol.';
+    }
+
+    if (!empty($errors)) {
+        respond(false, ['errors' => $errors]);
+    }
+
+    // Fetch user using session
+    $userSession = $_SESSION['user_reset_pass'] ?? null;
+    if (!$userSession || empty($token)) {
+        respond(false, ['errors' => ['session' => 'Session or token missing.']]);
+    }
+
+    $stmt = $pdo->prepare('SELECT id, reset_token, reset_token_expiry FROM users WHERE id = :id');
+    $stmt->execute(['id' => $userSession['id']]);
+    $user = $stmt->fetch();
+
+    if (!$user || !password_verify($token, $user['reset_token']) || strtotime($user['reset_token_expiry']) < time()) {
+        respond(false, ['errors' => ['token' => 'Invalid or expired token.']]);
+    }
+
+    // Update password
+    $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
+    $stmt = $pdo->prepare('UPDATE users SET password = :password, reset_token = NULL, reset_token_expiry = NULL WHERE id = :id');
+    $stmt->execute(['password' => $hashedPassword, 'id' => $user['id']]);
+
+    // Clear session
+    unset($_SESSION['user_reset_pass']);
+    session_regenerate_id(true);
+
+    respond(true, ['message' => 'Password has been reset successfully. You can now log in.']);
+}
 
 // === Signup ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
@@ -270,3 +302,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 }
 
 respond(false, ['errors' => ['request' => 'Invalid form submission.']]);
+?>

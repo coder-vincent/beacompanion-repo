@@ -13,7 +13,7 @@
     <div class="input-group">
         <i class="fa-solid fa-lock"></i>
         <input type="password" name="password" id="login-password" placeholder="Password">
-        <i class="fa-solid fa-eye" id="eye"></i>
+        <i class="fa-solid fa-eye-slash password-toggle" data-target="login-password" id="eye"></i>
         <?php
         if (isset($errors['password'])) {
             echo '<div class="error-main"><p>' . $errors['password'] . '</p></div>';

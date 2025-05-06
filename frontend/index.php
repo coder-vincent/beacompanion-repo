@@ -3,21 +3,6 @@ session_start();
 
 require_once(__DIR__ . '/auth/dbconnect.php');
 
-// $isLoggedIn = isset($_SESSION['user']);
-// $user = $isLoggedIn ? $_SESSION['user'] : null;
-
-// if (isset($_SESSION['user'])) {
-//   $role = $_SESSION['user']['role'] ?? 'patient';
-//   $token = urlencode($_SESSION['user']['plain_token']);
-
-//   $host = $_SERVER['HTTP_HOST'];
-//   $isLocalhost = strpos($host, 'localhost') !== false;
-
-//   $basePath = $isLocalhost ? '/thesis_project' : ''; // Adjust this if your local folder name is different
-
-//   header("Location: {$basePath}/{$role}/auth-token?token={$token}");
-//   exit;
-// }
 
 ?>
 
