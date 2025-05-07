@@ -1,7 +1,7 @@
 <form method="POST" id="reset-password-form" action="userAccount" data-action-key="userAccount">
 
     <?php if (isset($_SESSION['user_reset_pass']['token'])): ?>
-        <input type="text" name="token" id="reset-token"
+        <input type="hidden" name="token" id="reset-token"
             value="<?php echo htmlspecialchars($_SESSION['user_reset_pass']['token']); ?>">
     <?php endif; ?>
 

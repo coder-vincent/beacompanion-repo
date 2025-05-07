@@ -256,6 +256,12 @@ function attachFormAction() {
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
         const emailRegex = /^[^\s@]+@(gmail|yahoo)\.com$/i;
 
+        if (!name && !email && !password && !confirmPassword) {
+          errors.push("No Information submitted.");
+          displayErrors(form, errors);
+          return;
+        }
+
         if (!name) errors.push("Name is required.");
         if (!emailRegex.test(email)) errors.push("Email must be gmail/yahoo.");
         if (!strongPasswordRegex.test(password)) {

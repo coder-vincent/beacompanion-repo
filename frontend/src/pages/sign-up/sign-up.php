@@ -6,33 +6,37 @@
     <!-- Right Container -->
     <div class="rightDiv">
 
-        <!-- Header -->
-        <div class="topend-header">
-            <p class="paragraph-fade">
-                Already have an account?
-                <span class="user-creation">
-                    <a href="javascript:void(0)" onclick="loadPage('loginPage')">Sign In</a>
-                </span>
-            </p>
-        </div>
+        <div class="rightDiv-contents">
+            <!-- Header -->
+            <div class="topend-header">
+                <p class="paragraph-fade">
+                    Already have an account?
+                    <span class="user-creation">
+                        <a href="javascript:void(0)" onclick="loadPage('loginPage')">Sign In</a>
+                    </span>
+                </p>
+            </div>
+            <div class="rightDiv-container">
 
-        <div class="user-create">
-            <h1>Create Account</h1>
-        </div>
+                <div class="user-create">
+                    <h1>Create Account</h1>
+                </div>
 
-        <?php
-        if (isset($errors['user_exist'])) {
-            echo '<div class="error-main"><p>' . $errors['user_exist'] . '</p></div>';
-        }
-        ?>
+                <?php
+                if (isset($errors['user_exist'])) {
+                    echo '<div class="error-main"><p>' . $errors['user_exist'] . '</p></div>';
+                }
+                ?>
 
 
-        <div class="user-create-form">
-            <?php
+                <div class="user-create-form">
+                    <?php
 
-            include($_SERVER['DOCUMENT_ROOT'] . '/thesis_project/frontend/src/components/form/signup-form/signup-form.php');
+                    include($_SERVER['DOCUMENT_ROOT'] . '/thesis_project/frontend/src/components/form/signup-form/signup-form.php');
 
-            ?>
+                    ?>
+                </div>
+            </div>
         </div>
     </div>
 </div>

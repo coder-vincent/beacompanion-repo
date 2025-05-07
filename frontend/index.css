@@ -41,7 +41,7 @@
 html,
 body {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 a {
@@ -51,9 +51,9 @@ a {
 
 .company-name {
   font-weight: 500;
-  width: 100%;
   display: flex;
-  padding: 2em;
+  padding: 0.5em;
+  margin-left: 1em;
 }
 
 .company-name h2 {
@@ -81,26 +81,48 @@ a {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-end;
-  height: 100%;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+.rightDiv > .rightDiv-contents {
+  flex: 1;
+  width: 100%;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+.rightDiv-contents > .rightDiv-container {
+  height: calc(100vh - 64px);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .topend-header {
-  position: absolute;
+  position: sticky;
   top: 0;
-  right: 0;
   width: 100%;
   padding: 1rem;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   background-color: var(--background-color);
-  z-index: 10;
+  z-index: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 64px;
+}
+
+.topend-header p {
+  padding-right: 0;
 }
 
 .paragraph-fade {
   color: var(--text-color-light);
   font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+  padding-right: 3em;
 }
 
 .user-back {
@@ -205,8 +227,8 @@ a {
 .user-create,
 .user-forgot-password,
 .user-reset-password {
-  width: 100%;
-  padding: 2em;
+  padding: 0.5em;
+  margin-left: 1em;
 }
 
 .user-login-form,
@@ -214,7 +236,7 @@ a {
 .user-forgot-password-form,
 .user-reset-password-form {
   width: 100%;
-  padding: 2em;
+  padding: 0.5em;
 }
 
 input {
@@ -230,7 +252,7 @@ input {
 .input-group {
   position: relative;
   background-color: var(--background-secondary);
-  margin: 1em 0;
+  margin: 1em 2em;
   border-radius: 12px;
   display: flex;
   padding: 0.7em;
@@ -254,7 +276,7 @@ input {
   font-size: clamp(0.9rem, 1.2vw, 1.1rem);
   width: 100%;
   padding: 1em;
-  margin: 0.5em;
+  margin-bottom: 0.5em;
   border-radius: 0.5em;
 }
 
@@ -311,6 +333,8 @@ input:focus {
 #forgot-password {
   display: flex;
   justify-content: flex-end;
+  margin-right: 1em;
+  padding: 1em;
 }
 
 .show-password-container label,
@@ -331,7 +355,6 @@ input:focus {
 .user-button {
   background-color: var(--color-navy);
   border-radius: 12px;
-  margin-top: 1em;
   color: var(--background-color);
 }
 
@@ -373,10 +396,6 @@ input:focus {
 .check-icon i.invalid {
   display: block;
   background-color: red;
-}
-
-#patient-page {
-  overflow: hidden;
 }
 
 .welcome-reveal {
@@ -486,6 +505,41 @@ input:focus {
   display: none;
 }
 
+.dashboard-content {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "navbar navbar"
+    "sidebar main"
+    "sidebar footer";
+}
+
+nav {
+  top: 0;
+  position: sticky;
+  grid-area: navbar;
+  padding: 1em;
+  background-color: blue;
+}
+
+aside {
+  grid-area: sidebar;
+  background-color: yellow;
+}
+
+main {
+  grid-area: main;
+  background-color: green;
+}
+
+footer {
+  grid-area: footer;
+  padding: 1em;
+  background-color: red;
+}
+
 @media screen and (max-width: 1024px) {
   #login,
   #sign-up,
@@ -494,24 +548,13 @@ input:focus {
     grid-template-columns: 1fr;
   }
 
-  /* .rightDiv {
-    position: relative;
-    width: 100%;
-    backdrop-filter: blur(8px);
-    background-size: cover;
-    background-position: center;
-    padding: 1em;
-    background-image: url("/thesis_project/frontend/src/assets/images/weak-hero.jpg");
-    height: auto;
-  } */
-
   .rightDiv {
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: auto;
+    min-height: 100vh;
     background-image: url("/thesis_project/frontend/src/assets/images/weak-hero.jpg");
     background-size: cover;
     background-position: center;
@@ -583,9 +626,16 @@ input:focus {
     backdrop-filter: blur(5px);
     padding: 0;
     position: relative;
-    height: auto;
     background-size: cover;
     background-position: center;
+  }
+
+  .rightDiv-container {
+    height: calc(100vh - 40px);
+  }
+
+  .topend-header {
+    height: 40px;
   }
 
   .company-name {
