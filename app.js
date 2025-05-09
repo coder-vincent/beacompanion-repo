@@ -12,12 +12,19 @@ const pageMapping = {
   patientDashboard: "frontend/src/pages/patient/dashboard/dashboard.php",
 
   // MAIN CONTENTS OF ROLES
-  patientMainDashboard: "frontent/src/components/main/patient/dashboard.php",
-  patientMainAbout: "frontent/src/components/main/patient/about.php",
+  patientMainDashboard: "frontend/src/components/main/patient/dashboard.php",
+  patientMainAbout: "frontend/src/components/main/patient/about.php",
+  doctorMainDashboard: "frontend/src/components/main/doctor/dashboard.php",
+  doctorMainAppointments:
+    "frontend/src/components/main/doctor/appointments.php",
+  adminMainDashboard: "frontend/src/components/main/admin/dashboard.php",
+  adminMainUsers: "frontend/src/components/main/admin/users.php",
 };
 
 function loadPage(pageName) {
-  const url = pageMapping[pageName];
+  // Parse page name and parameters
+  const [basePage, params] = pageName.split("?");
+  const url = pageMapping[basePage];
 
   if (!url) {
     console.error("404: Page not found");
@@ -28,10 +35,30 @@ function loadPage(pageName) {
     sessionStorage.setItem("lastPage", pageName);
   }
 
-  fetch(url)
+  // Add parameters to URL if they exist
+  const fullUrl = params ? `${url}?${params}` : url;
+
+  // Show loading state
+  const mainContent = document.querySelector("main");
+  if (mainContent) {
+    mainContent.innerHTML = '<div class="loading">Loading...</div>';
+  }
+
+  fetch(fullUrl)
     .then((res) => res.text())
     .then((html) => {
-      document.getElementById("app").innerHTML = html;
+      // If it's a dashboard page, load the content into the main area
+      if (basePage.includes("Main")) {
+        const mainContent = document.querySelector("main");
+        if (mainContent) {
+          mainContent.innerHTML = html;
+          // Update active state in sidebar
+          updateSidebarActiveState(basePage);
+        }
+      } else {
+        document.getElementById("app").innerHTML = html;
+      }
+
       attachAllListeners();
 
       if (!window.gsap) {
@@ -40,9 +67,9 @@ function loadPage(pageName) {
       }
 
       if (
-        pageName === "adminDashboard" ||
-        pageName === "doctorDashboard" ||
-        pageName === "patientDashboard"
+        basePage === "adminDashboard" ||
+        basePage === "doctorDashboard" ||
+        basePage === "patientDashboard"
       ) {
         const sidebar = document.querySelector(".sidebar");
         const toggleBtn = document.querySelector(".toggle-sidebar");
@@ -69,12 +96,12 @@ function loadPage(pageName) {
         } else {
           console.log(
             "Sidebar or toggle button not found in loaded page:",
-            pageName
+            basePage
           );
         }
       }
 
-      if (pageName === "patientDashboard") {
+      if (basePage === "patientDashboard") {
         setTimeout(() => {
           if (sessionStorage.getItem("welcomeShown")) {
             const welcomeReveal = document.querySelector(".welcome-reveal");
@@ -162,7 +189,7 @@ function loadPage(pageName) {
             },
           });
         }, 100);
-      } else if (pageName === "forgotPasswordPage") {
+      } else if (basePage === "forgotPasswordPage") {
         setTimeout(() => {
           const backBtnWrapper = document.getElementById("backBtnWrapper");
           const backText = backBtnWrapper?.querySelector(".back-text");
@@ -187,7 +214,7 @@ function loadPage(pageName) {
             });
           }
         }, 100);
-      } else if (pageName === "resetPasswordPage") {
+      } else if (basePage === "resetPasswordPage") {
         const token = sessionStorage.getItem("resetToken");
         const tokenInput = document.getElementById("reset-token");
         if (token && tokenInput) {
@@ -195,7 +222,29 @@ function loadPage(pageName) {
         }
       }
     })
-    .catch((error) => console.error("Page load error", error));
+    .catch((error) => {
+      console.error("Error loading page:", error);
+      const mainContent = document.querySelector("main");
+      if (mainContent) {
+        mainContent.innerHTML =
+          '<div class="error">Error loading content. Please try again.</div>';
+      }
+    });
+}
+
+function updateSidebarActiveState(pageName) {
+  // Remove active class from all sidebar items
+  document.querySelectorAll(".sidebar-menu li").forEach((item) => {
+    item.classList.remove("active");
+  });
+
+  // Add active class to current page
+  const sidebarItem = document.querySelector(
+    `.sidebar-menu li a[onclick*="${pageName}"]`
+  );
+  if (sidebarItem) {
+    sidebarItem.parentElement.classList.add("active");
+  }
 }
 
 function togglePasswordVisibility(checkbox, fields) {

@@ -16,13 +16,13 @@ if (in_array($role, ['admin', 'doctor', 'patient'])):
                     <h3>Main</h3>
                     <ul>
                         <li class="<?php echo $currentPage === 'dashboard' ? 'active' : ''; ?>">
-                            <a href="javascript:void(0)" onclick="loadPage('adminDashboard')">
+                            <a href="javascript:void(0)" onclick="loadPage('adminMainDashboard')">
                                 <span class="material-symbols-rounded">dashboard</span>
                                 <span>Dashboard</span>
                             </a>
                         </li>
                         <li class="<?php echo $currentPage === 'users' ? 'active' : ''; ?>">
-                            <a href="javascript:void(0)" onclick="loadPage('users')">
+                            <a href="javascript:void(0)" onclick="loadPage('adminMainUsers')">
                                 <span class="material-symbols-rounded">manage_accounts</span>
                                 <span>Manage Users</span>
                             </a>
@@ -35,13 +35,13 @@ if (in_array($role, ['admin', 'doctor', 'patient'])):
                     <h3>Main</h3>
                     <ul>
                         <li class="<?php echo $currentPage === 'dashboard' ? 'active' : ''; ?>">
-                            <a href="javascript:void(0)" onclick="loadPage('doctorDashboard')">
+                            <a href="javascript:void(0)" onclick="loadPage('doctorMainDashboard')">
                                 <span class="material-symbols-rounded">dashboard</span>
                                 <span>Dashboard</span>
                             </a>
                         </li>
                         <li class="<?php echo $currentPage === 'appointments' ? 'active' : ''; ?>">
-                            <a href="javascript:void(0)" onclick="loadPage('appointments')">
+                            <a href="javascript:void(0)" onclick="loadPage('doctorMainAppointments')">
                                 <span class="material-symbols-rounded">event</span>
                                 <span>Appointments</span>
                             </a>
@@ -54,15 +54,15 @@ if (in_array($role, ['admin', 'doctor', 'patient'])):
                     <h3>Main</h3>
                     <ul>
                         <li class="<?php echo $currentPage === 'dashboard' ? 'active' : ''; ?>">
-                            <a href="javascript:void(0)" onclick="loadPage('patientDashboard')">
+                            <a href="javascript:void(0)" onclick="loadPage('patientMainDashboard')">
                                 <span class="material-symbols-rounded">dashboard</span>
                                 <span>Dashboard</span>
                             </a>
                         </li>
-                        <li class="<?php echo $currentPage === 'appointments' ? 'active' : ''; ?>">
-                            <a href="javascript:void(0)" onclick="loadPage('appointments')">
-                                <span class="material-symbols-rounded">event</span>
-                                <span>Appointments</span>
+                        <li class="<?php echo $currentPage === 'about' ? 'active' : ''; ?>">
+                            <a href="javascript:void(0)" onclick="loadPage('patientMainAbout')">
+                                <span class="material-symbols-rounded">info</span>
+                                <span>About</span>
                             </a>
                         </li>
                     </ul>
