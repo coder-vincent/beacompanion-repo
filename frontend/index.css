@@ -4,7 +4,7 @@
   --color-navy: #002c69;
   --color-green: #008000;
 
-  --background-color: #ffffff;
+  --background-color: #fdfdfd;
   --background-secondary: #f5f5f5;
   --text-color: #1a1a1a;
   --text-color-light: #555555;
@@ -521,12 +521,26 @@ nav {
   position: sticky;
   grid-area: navbar;
   padding: 1em;
-  background-color: blue;
+  background-color: var(--background-color);
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text-color);
 }
 
 aside {
+  height: calc(100vh - 62px);
+  top: 62px;
+  position: sticky;
+  align-self: start;
   grid-area: sidebar;
   background-color: yellow;
+}
+
+.toggle-sidebar {
+  display: none;
 }
 
 main {
@@ -538,6 +552,85 @@ footer {
   grid-area: footer;
   padding: 1em;
   background-color: red;
+}
+
+.sidebar {
+  background-color: var(--background-color);
+  border-right: 1px solid var(--border-color);
+  padding: 1.5rem 1rem;
+  height: calc(100vh - 62px);
+  overflow-y: auto;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  flex: 1;
+}
+
+.sidebar-menu > div:last-child {
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.sidebar-menu h3 {
+  color: var(--text-color-light);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+  padding-left: 0.5rem;
+}
+
+.sidebar-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu li {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-menu li a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--text-color);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.sidebar-menu li a:hover {
+  background-color: var(--background-secondary);
+  color: var(--primary-color);
+}
+
+.sidebar-menu li.active a {
+  background-color: var(--primary-color);
+  color: var(--background-color);
+}
+
+.sidebar-menu > div:last-child li a {
+  color: var(--secondary-color);
+}
+
+.sidebar-menu > div:last-child li a:hover {
+  background-color: var(--secondary-color);
+  color: var(--background-color);
+}
+
+.sidebar-menu .material-symbols-rounded {
+  font-size: 1.25rem;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 
 @media screen and (max-width: 1024px) {
@@ -598,6 +691,105 @@ footer {
 
   .leftDiv {
     display: none;
+  }
+
+  .dashboard-content {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "navbar"
+      "main"
+      "footer";
+  }
+
+  aside {
+    position: fixed;
+    width: 300px;
+    display: none;
+    background-color: var(--background-color);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  aside.show {
+    display: block;
+  }
+
+  nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 64px;
+    background: var(--background-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 1000;
+  }
+
+  .navbar-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .toggle-sidebar {
+    display: flex;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+  }
+
+  .toggle-sidebar:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  main {
+    padding: 24px;
+    margin-top: 64px;
+    background-color: var(--background-color);
+  }
+
+  footer {
+    padding: 24px;
+    background-color: var(--background-color);
+    border-top: 1px solid var(--border-color);
+  }
+
+  .sidebar {
+    position: fixed;
+    left: -300px;
+    top: 64px;
+    width: 300px;
+    height: calc(100vh - 64px);
+    background-color: var(--background-color);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: left 0.3s ease;
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+
+  .sidebar-overlay.show {
+    display: block;
   }
 }
 

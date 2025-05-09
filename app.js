@@ -24,14 +24,8 @@ function loadPage(pageName) {
     sessionStorage.setItem("lastPage", pageName);
   }
 
-  fetch(url).then((res) => {
-    console.log(`Fetching: ${url}`, res.status);
-    return res.text();
-  });
-
   fetch(url)
     .then((res) => res.text())
-
     .then((html) => {
       document.getElementById("app").innerHTML = html;
       attachAllListeners();
@@ -39,6 +33,41 @@ function loadPage(pageName) {
       if (!window.gsap) {
         console.warn("GSAP not found");
         return;
+      }
+
+      if (
+        pageName === "adminDashboard" ||
+        pageName === "doctorDashboard" ||
+        pageName === "patientDashboard"
+      ) {
+        const sidebar = document.querySelector(".sidebar");
+        const toggleBtn = document.querySelector(".toggle-sidebar");
+        const mainContent = document.querySelector("main");
+
+        if (sidebar && toggleBtn) {
+          console.log("Sidebar and toggle button found after page load");
+          toggleBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("show");
+            if (mainContent) {
+              if (sidebar.classList.contains("show")) {
+                mainContent.style.overflow = "hidden";
+                mainContent.style.pointerEvents = "none";
+                mainContent.style.userSelect = "none";
+                document.body.style.overflow = "hidden";
+              } else {
+                mainContent.style.overflow = "";
+                mainContent.style.pointerEvents = "";
+                mainContent.style.userSelect = "";
+                document.body.style.overflow = "";
+              }
+            }
+          });
+        } else {
+          console.log(
+            "Sidebar or toggle button not found in loaded page:",
+            pageName
+          );
+        }
       }
 
       if (pageName === "patientDashboard") {
