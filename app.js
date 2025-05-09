@@ -12,8 +12,8 @@ const pageMapping = {
   patientDashboard: "frontend/src/pages/patient/dashboard/dashboard.php",
 
   // MAIN CONTENTS OF ROLES
-  patientMainDashboard: "frontent/src/components/main/patient/dashboard.php",
-  patientMainAbout: "frontent/src/components/main/patient/about.php",
+  patientMainDashboard: "frontend/src/components/main/patient/dashboard.php",
+  patientMainAbout: "frontend/src/components/main/patient/about.php",
 };
 
 function loadPage(pageName) {
@@ -98,29 +98,30 @@ function loadPage(pageName) {
 
       if (basePage === "patientDashboard") {
         setTimeout(() => {
-          if (sessionStorage.getItem("welcomeShown")) {
-            const welcomeReveal = document.querySelector(".welcome-reveal");
+          const dashboard = document.querySelector("#patient-dashboard");
+          const welcomeReveal = document.querySelector(".welcome-reveal");
+          const h2 = document.querySelector("#patient-page h2");
+
+          // If dashboard is already visible, remove welcome elements without animation
+          if (dashboard && dashboard.style.display === "block") {
             if (welcomeReveal) welcomeReveal.remove();
-
-            const h2 = document.querySelector("#patient-page h2");
             if (h2) h2.remove();
+            return;
+          }
 
-            const dashboard = document.querySelector("#patient-dashboard");
+          // If welcome shown before, just show dashboard without animation
+          if (sessionStorage.getItem("welcomeShown")) {
+            if (welcomeReveal) welcomeReveal.remove();
+            if (h2) h2.remove();
             if (dashboard) {
               dashboard.style.display = "block";
-              gsap.fromTo(
-                dashboard,
-                { opacity: 0 },
-                {
-                  opacity: 1,
-                  duration: 1.5,
-                  ease: "power2.out",
-                }
-              );
             }
             return;
           }
+
+          // Only run animations on first visit
           sessionStorage.setItem("welcomeShown", "true");
+          dashboard.style.display = "none";
 
           gsap.from(".block", {
             width: "0%",
@@ -150,7 +151,6 @@ function loadPage(pageName) {
             delay: 3,
             ease: "power2.out",
             onStart: () => {
-              const h2 = document.querySelector("#patient-page h2");
               if (h2) h2.style.visibility = "visible";
             },
           });
@@ -161,25 +161,10 @@ function loadPage(pageName) {
             delay: 6,
             ease: "power2.in",
             onComplete: () => {
-              const h2 = document.querySelector("#patient-page h2");
               if (h2) h2.remove();
-
-              const welcomeReveal = document.querySelector(".welcome-reveal");
               if (welcomeReveal) welcomeReveal.remove();
-
-              const dashboard = document.querySelector("#patient-dashboard");
               if (dashboard) {
                 dashboard.style.display = "block";
-
-                gsap.fromTo(
-                  dashboard,
-                  { opacity: 0 },
-                  {
-                    opacity: 1,
-                    duration: 3,
-                    ease: "power2.out",
-                  }
-                );
               }
             },
           });
@@ -585,6 +570,16 @@ function attachAllListeners() {
   attachCreatePasswordToggle();
   attachFormAction();
   attachInputValidation();
+}
+
+function handleLogout() {
+  // Clear session storage
+  sessionStorage.clear();
+
+  // Redirect to login page
+  const isLocal = window.location.hostname === "localhost";
+  const basePath = isLocal ? "/thesis_project" : "";
+  window.location.href = basePath + "/";
 }
 
 window.onload = () => {

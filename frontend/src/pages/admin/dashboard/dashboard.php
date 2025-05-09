@@ -50,7 +50,14 @@ $firstName = explode(' ', trim($fullName))[0] ?? 'Guest';
         ?>
 
         <main>
-
+            <?php
+            $currentPage = $_GET['page'] ?? 'dashboard';
+            if ($currentPage === 'dashboard') {
+                include __DIR__ . '/../../../components/main/admin/dashboard.php';
+            } else if ($currentPage === 'users') {
+                include __DIR__ . '/../../../components/main/admin/users.php';
+            }
+            ?>
         </main>
 
         <?php

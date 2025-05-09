@@ -1,5 +1,4 @@
 <?php
-session_start();
 $user = $_SESSION['user'] ?? null;
 if (!$user || $user['role'] !== 'patient') {
     header('Location: /thesis_project');
