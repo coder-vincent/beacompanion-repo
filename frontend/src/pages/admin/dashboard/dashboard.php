@@ -56,6 +56,10 @@ $firstName = explode(' ', trim($fullName))[0] ?? 'Guest';
                 include __DIR__ . '/../../../components/main/admin/dashboard.php';
             } else if ($currentPage === 'users') {
                 include __DIR__ . '/../../../components/main/admin/users.php';
+            } else if ($currentPage === 'about') {
+                include __DIR__ . '/../../../components/main/admin/about.php';
+            } else if ($currentPage === 'faq') {
+                include __DIR__ . '/../../../components/main/admin/faq.php';
             }
             ?>
         </main>

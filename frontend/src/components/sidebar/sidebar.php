@@ -36,7 +36,21 @@ if (in_array($role, ['admin', 'doctor', 'patient'])):
                                 <span>Manage Users</span>
                             </a>
                         </li>
+                        <h3>Information</h3>
+                        <li class="<?php echo $currentPage === 'about' ? 'active' : ''; ?>">
+                            <a href="javascript:void(0)" onclick="loadPage('adminDashboard?page=about')">
+                                <span class="material-symbols-rounded">info</span>
+                                <span>About</span>
+                            </a>
+                        </li>
+                        <li class="<?php echo $currentPage === 'faq' ? 'active' : ''; ?>">
+                            <a href="javascript:void(0)" onclick="loadPage('adminDashboard?page=faq')">
+                                <span class="material-symbols-rounded">help</span>
+                                <span>FAQ</span>
+                            </a>
+                        </li>
                     </ul>
+
                 </div>
 
                 <div>

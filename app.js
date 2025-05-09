@@ -11,13 +11,14 @@ const pageMapping = {
   doctorDashboard: "frontend/src/pages/doctor/dashboard/dashboard.php",
   patientDashboard: "frontend/src/pages/patient/dashboard/dashboard.php",
 
-  // MAIN CONTENTS OF ROLES
   patientMainDashboard: "frontend/src/components/main/patient/dashboard.php",
   patientMainAbout: "frontend/src/components/main/patient/about.php",
+  adminMainDashboard: "frontend/src/components/main/admin/dashboard.php",
+  adminMainAbout: "frontend/src/components/main/admin/about.php",
+  adminMainFaq: "frontend/src/components/main/admin/faq.php",
 };
 
 function loadPage(pageName) {
-  // Parse page name and parameters
   const [basePage, params] = pageName.split("?");
   const url = pageMapping[basePage];
 
@@ -30,10 +31,8 @@ function loadPage(pageName) {
     sessionStorage.setItem("lastPage", pageName);
   }
 
-  // Add parameters to URL if they exist
   const fullUrl = params ? `${url}?${params}` : url;
 
-  // Show loading state
   const mainContent = document.querySelector("main");
   if (mainContent) {
     mainContent.innerHTML = '<div class="loading">Loading...</div>';
@@ -42,12 +41,10 @@ function loadPage(pageName) {
   fetch(fullUrl)
     .then((res) => res.text())
     .then((html) => {
-      // If it's a dashboard page, load the content into the main area
       if (basePage.includes("Main")) {
         const mainContent = document.querySelector("main");
         if (mainContent) {
           mainContent.innerHTML = html;
-          // Update active state in sidebar
           updateSidebarActiveState(basePage);
         }
       } else {
@@ -102,14 +99,12 @@ function loadPage(pageName) {
           const welcomeReveal = document.querySelector(".welcome-reveal");
           const h2 = document.querySelector("#patient-page h2");
 
-          // If dashboard is already visible, remove welcome elements without animation
           if (dashboard && dashboard.style.display === "block") {
             if (welcomeReveal) welcomeReveal.remove();
             if (h2) h2.remove();
             return;
           }
 
-          // If welcome shown before, just show dashboard without animation
           if (sessionStorage.getItem("welcomeShown")) {
             if (welcomeReveal) welcomeReveal.remove();
             if (h2) h2.remove();
@@ -119,7 +114,6 @@ function loadPage(pageName) {
             return;
           }
 
-          // Only run animations on first visit
           sessionStorage.setItem("welcomeShown", "true");
           dashboard.style.display = "none";
 
@@ -213,12 +207,10 @@ function loadPage(pageName) {
 }
 
 function updateSidebarActiveState(pageName) {
-  // Remove active class from all sidebar items
   document.querySelectorAll(".sidebar-menu li").forEach((item) => {
     item.classList.remove("active");
   });
 
-  // Add active class to current page
   const sidebarItem = document.querySelector(
     `.sidebar-menu li a[onclick*="${pageName}"]`
   );
@@ -565,18 +557,34 @@ function attachInputValidation() {
   confirmPasswordInput?.addEventListener("input", validatePasswords);
 }
 
+function updateSystemHealth() {
+  const systemHealth = document.querySelector(".system-health-status");
+  if (!systemHealth) return;
+
+  const progressBars = document.querySelectorAll(".progress");
+  progressBars.forEach((bar) => {
+    const value = parseInt(bar.style.width);
+    if (value > 90) {
+      bar.style.backgroundColor = "#f44336";
+    } else if (value > 70) {
+      bar.style.backgroundColor = "#ff9800";
+    } else {
+      bar.style.backgroundColor = "#4CAF50";
+    }
+  });
+}
+
 function attachAllListeners() {
   attachPasswordToggle();
   attachCreatePasswordToggle();
   attachFormAction();
   attachInputValidation();
+  updateSystemHealth();
 }
 
 function handleLogout() {
-  // Clear session storage
   sessionStorage.clear();
 
-  // Redirect to login page
   const isLocal = window.location.hostname === "localhost";
   const basePath = isLocal ? "/thesis_project" : "";
   window.location.href = basePath + "/";

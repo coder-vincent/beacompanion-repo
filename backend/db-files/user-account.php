@@ -34,7 +34,7 @@ function resetSessionIfNeeded($expectedUserId = null)
     }
 }
 
-// === Password Reset Request ===
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-password'])) {
     $email = filter_input(INPUT_POST, 'forgot-password-email', FILTER_SANITIZE_EMAIL);
 
@@ -94,7 +94,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-password'])) {
     }
 }
 
-// === Reset Password ===
 if (isset($_POST['change-password'])) {
     $token = $_POST['token'] ?? '';
     $newPassword = $_POST['new-password'] ?? '';
@@ -137,7 +136,6 @@ if (isset($_POST['change-password'])) {
     respond(true, ['message' => 'Password has been reset successfully. You can now log in.']);
 }
 
-// === Signup ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
     $name = trim($_POST['name'] ?? '');
@@ -211,7 +209,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
     }
 }
 
-// === Login ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $email = filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'] ?? '';
@@ -239,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         $authTokenExpiry = date('Y-m-d H:i:s', time() + 3600);
         $hashedAuthToken = password_hash($authToken, PASSWORD_BCRYPT);
 
-        $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry WHERE email = :email');
+        $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry, last_login = NOW() WHERE email = :email');
         $stmt->execute([
             'token' => $hashedAuthToken,
             'expiry' => $authTokenExpiry,
@@ -275,7 +272,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $authTokenExpiry = date('Y-m-d H:i:s', time() + 3600);
     $hashedAuthToken = password_hash($authToken, PASSWORD_BCRYPT);
 
-    $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry WHERE email = :email');
+    $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry, last_login = NOW() WHERE email = :email');
     $stmt->execute([
         'token' => $hashedAuthToken,
         'expiry' => $authTokenExpiry,
