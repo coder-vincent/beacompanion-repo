@@ -12,13 +12,8 @@ const pageMapping = {
   patientDashboard: "frontend/src/pages/patient/dashboard/dashboard.php",
 
   // MAIN CONTENTS OF ROLES
-  patientMainDashboard: "frontend/src/components/main/patient/dashboard.php",
-  patientMainAbout: "frontend/src/components/main/patient/about.php",
-  doctorMainDashboard: "frontend/src/components/main/doctor/dashboard.php",
-  doctorMainAppointments:
-    "frontend/src/components/main/doctor/appointments.php",
-  adminMainDashboard: "frontend/src/components/main/admin/dashboard.php",
-  adminMainUsers: "frontend/src/components/main/admin/users.php",
+  patientMainDashboard: "frontent/src/components/main/patient/dashboard.php",
+  patientMainAbout: "frontent/src/components/main/patient/about.php",
 };
 
 function loadPage(pageName) {
@@ -590,14 +585,6 @@ function attachAllListeners() {
   attachCreatePasswordToggle();
   attachFormAction();
   attachInputValidation();
-}
-
-function handleLogout() {
-  sessionStorage.clear();
-  const isLocal = window.location.hostname === "localhost";
-  const basePath = isLocal ? "/thesis_project" : "";
-  history.replaceState(null, "", basePath + "/");
-  loadPage("loginPage");
 }
 
 window.onload = () => {
