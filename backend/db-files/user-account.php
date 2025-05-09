@@ -34,6 +34,187 @@ function resetSessionIfNeeded($expectedUserId = null)
     }
 }
 
+// Get user details
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_user') {
+    $userId = $_GET['id'] ?? null;
+
+    if (!$userId) {
+        respond(false, ['message' => 'User ID is required']);
+    }
+
+    $stmt = $pdo->prepare('SELECT id, name, email, role FROM users WHERE id = :id AND role != "admin"');
+    $stmt->execute(['id' => $userId]);
+    $user = $stmt->fetch();
+
+    if (!$user) {
+        respond(false, ['message' => 'User not found']);
+    }
+
+    respond(true, ['user' => $user]);
+}
+
+// Add new user
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_user') {
+    $name = trim($_POST['name'] ?? '');
+    $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+    $password = $_POST['password'] ?? '';
+    $role = $_POST['role'] ?? '';
+
+    $errors = [];
+
+    if (empty($name)) {
+        $errors['name'] = 'Name is required';
+    } elseif (!preg_match('/^[a-zA-Z\s]{2,}$/', $name)) {
+        $errors['name'] = 'Name must contain only letters and spaces, minimum 2 characters';
+    }
+
+    if (empty($email)) {
+        $errors['email'] = 'Email is required';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = 'Invalid email format';
+    }
+
+    if (empty($password)) {
+        $errors['password'] = 'Password is required';
+    } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/', $password)) {
+        $errors['password'] = 'Password must be at least 8 characters and include upper/lowercase, number, and symbol';
+    }
+
+    if (empty($role)) {
+        $errors['role'] = 'Role is required';
+    } elseif (!in_array($role, ['patient', 'doctor'])) {
+        $errors['role'] = 'Invalid role selected';
+    }
+
+    if (!empty($errors)) {
+        respond(false, ['errors' => $errors]);
+    }
+
+    // Check if email already exists
+    $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email');
+    $stmt->execute(['email' => $email]);
+    if ($stmt->fetch()) {
+        respond(false, ['message' => 'Email already registered']);
+    }
+
+    try {
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+        $createdAt = date('Y-m-d H:i:s');
+
+        $stmt = $pdo->prepare('INSERT INTO users (name, email, password, role, created_at) VALUES (:name, :email, :password, :role, :created_at)');
+        $stmt->execute([
+            'name' => $name,
+            'email' => $email,
+            'password' => $hashedPassword,
+            'role' => $role,
+            'created_at' => $createdAt
+        ]);
+
+        respond(true, ['message' => 'User added successfully']);
+    } catch (Exception $e) {
+        respond(false, ['message' => 'Error adding user: ' . $e->getMessage()]);
+    }
+}
+
+// Update user
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_user') {
+    $userId = $_POST['userId'] ?? null;
+    $name = trim($_POST['name'] ?? '');
+    $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+    $password = $_POST['password'] ?? '';
+    $role = $_POST['role'] ?? '';
+
+    $errors = [];
+
+    if (!$userId) {
+        $errors['userId'] = 'User ID is required';
+    }
+
+    if (empty($name)) {
+        $errors['name'] = 'Name is required';
+    } elseif (!preg_match('/^[a-zA-Z\s]{2,}$/', $name)) {
+        $errors['name'] = 'Name must contain only letters and spaces, minimum 2 characters';
+    }
+
+    if (empty($email)) {
+        $errors['email'] = 'Email is required';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = 'Invalid email format';
+    }
+
+    if (!empty($password) && !preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/', $password)) {
+        $errors['password'] = 'Password must be at least 8 characters and include upper/lowercase, number, and symbol';
+    }
+
+    if (empty($role)) {
+        $errors['role'] = 'Role is required';
+    } elseif (!in_array($role, ['patient', 'doctor'])) {
+        $errors['role'] = 'Invalid role selected';
+    }
+
+    if (!empty($errors)) {
+        respond(false, ['errors' => $errors]);
+    }
+
+    // Check if email already exists for other users
+    $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email AND id != :id');
+    $stmt->execute(['email' => $email, 'id' => $userId]);
+    if ($stmt->fetch()) {
+        respond(false, ['message' => 'Email already registered to another user']);
+    }
+
+    try {
+        if (!empty($password)) {
+            $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+            $stmt = $pdo->prepare('UPDATE users SET name = :name, email = :email, password = :password, role = :role WHERE id = :id AND role != "admin"');
+            $stmt->execute([
+                'name' => $name,
+                'email' => $email,
+                'password' => $hashedPassword,
+                'role' => $role,
+                'id' => $userId
+            ]);
+        } else {
+            $stmt = $pdo->prepare('UPDATE users SET name = :name, email = :email, role = :role WHERE id = :id AND role != "admin"');
+            $stmt->execute([
+                'name' => $name,
+                'email' => $email,
+                'role' => $role,
+                'id' => $userId
+            ]);
+        }
+
+        if ($stmt->rowCount() === 0) {
+            respond(false, ['message' => 'User not found or no changes made']);
+        }
+
+        respond(true, ['message' => 'User updated successfully']);
+    } catch (Exception $e) {
+        respond(false, ['message' => 'Error updating user: ' . $e->getMessage()]);
+    }
+}
+
+// Delete user
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_user') {
+    $userId = $_POST['id'] ?? null;
+
+    if (!$userId) {
+        respond(false, ['message' => 'User ID is required']);
+    }
+
+    try {
+        $stmt = $pdo->prepare('DELETE FROM users WHERE id = :id AND role != "admin"');
+        $stmt->execute(['id' => $userId]);
+
+        if ($stmt->rowCount() === 0) {
+            respond(false, ['message' => 'User not found or cannot be deleted']);
+        }
+
+        respond(true, ['message' => 'User deleted successfully']);
+    } catch (Exception $e) {
+        respond(false, ['message' => 'Error deleting user: ' . $e->getMessage()]);
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset-password'])) {
     $email = filter_input(INPUT_POST, 'forgot-password-email', FILTER_SANITIZE_EMAIL);

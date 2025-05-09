@@ -574,12 +574,137 @@ function updateSystemHealth() {
   });
 }
 
+// User Management Functions
+function showAddUserModal() {
+  document.getElementById("modalTitle").textContent = "Add New User";
+  document.getElementById("userForm").reset();
+  document.getElementById("userId").value = "";
+  document.getElementById("password").required = true;
+  document.querySelector(".password-group small").style.display = "none";
+  document.getElementById("userModal").style.display = "block";
+}
+
+function editUser(userId) {
+  document.getElementById("modalTitle").textContent = "Edit User";
+  document.getElementById("userId").value = userId;
+  document.getElementById("password").required = false;
+  document.querySelector(".password-group small").style.display = "block";
+
+  // Fetch user data and populate form
+  fetch(
+    `/thesis_project/backend/db-files/user-account.php?action=get_user&id=${userId}`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        document.getElementById("name").value = data.user.name;
+        document.getElementById("email").value = data.user.email;
+        document.getElementById("role").value = data.user.role;
+      }
+    });
+
+  document.getElementById("userModal").style.display = "block";
+}
+
+function deleteUser(userId) {
+  if (confirm("Are you sure you want to delete this user?")) {
+    fetch("/thesis_project/backend/db-files/user-account.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `action=delete_user&id=${userId}`,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert("Error deleting user: " + data.message);
+        }
+      });
+  }
+}
+
+function closeModal() {
+  document.getElementById("userModal").style.display = "none";
+}
+
+// Search and filter functionality
+function filterUsers() {
+  const searchTerm = document.getElementById("userSearch").value.toLowerCase();
+  const roleFilter = document.getElementById("roleFilter").value;
+  const rows = document.querySelectorAll(".users-table tbody tr");
+
+  rows.forEach((row) => {
+    const name = row.cells[0].textContent.toLowerCase();
+    const email = row.cells[1].textContent.toLowerCase();
+    const role = row.cells[2].textContent.toLowerCase();
+
+    const matchesSearch =
+      name.includes(searchTerm) || email.includes(searchTerm);
+    const matchesRole = !roleFilter || role.includes(roleFilter);
+
+    row.style.display = matchesSearch && matchesRole ? "" : "none";
+  });
+}
+
+// Add user management event listeners to attachAllListeners function
+function attachUserManagementListeners() {
+  // Search and filter event listeners
+  const searchInput = document.getElementById("userSearch");
+  const roleFilter = document.getElementById("roleFilter");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", filterUsers);
+  }
+
+  if (roleFilter) {
+    roleFilter.addEventListener("change", filterUsers);
+  }
+
+  // Form submission
+  const userForm = document.getElementById("userForm");
+  if (userForm) {
+    userForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const userId = formData.get("userId");
+      formData.append("action", userId ? "update_user" : "add_user");
+
+      fetch("/thesis_project/backend/db-files/user-account.php", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert("Error: " + data.message);
+          }
+        });
+    });
+  }
+
+  // Close modal when clicking outside
+  window.onclick = function (event) {
+    const modal = document.getElementById("userModal");
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+}
+
+// Update attachAllListeners to include user management listeners
 function attachAllListeners() {
   attachPasswordToggle();
   attachCreatePasswordToggle();
   attachFormAction();
   attachInputValidation();
   updateSystemHealth();
+  attachUserManagementListeners();
 }
 
 function handleLogout() {
