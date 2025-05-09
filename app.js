@@ -10,6 +10,10 @@ const pageMapping = {
   adminDashboard: "frontend/src/pages/admin/dashboard/dashboard.php",
   doctorDashboard: "frontend/src/pages/doctor/dashboard/dashboard.php",
   patientDashboard: "frontend/src/pages/patient/dashboard/dashboard.php",
+
+  // MAIN CONTENTS OF ROLES
+  patientMainDashboard: "frontent/src/components/main/patient/dashboard.php",
+  patientMainAbout: "frontent/src/components/main/patient/about.php",
 };
 
 function loadPage(pageName) {
@@ -537,6 +541,14 @@ function attachAllListeners() {
   attachCreatePasswordToggle();
   attachFormAction();
   attachInputValidation();
+}
+
+function handleLogout() {
+  sessionStorage.clear();
+  const isLocal = window.location.hostname === "localhost";
+  const basePath = isLocal ? "/thesis_project" : "";
+  history.replaceState(null, "", basePath + "/");
+  loadPage("loginPage");
 }
 
 window.onload = () => {

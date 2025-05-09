@@ -545,7 +545,10 @@ aside {
 
 main {
   grid-area: main;
-  background-color: green;
+  background-color: var(--background-color);
+  padding: 2rem;
+  min-height: calc(100vh - 62px);
+  overflow-y: auto;
 }
 
 footer {
