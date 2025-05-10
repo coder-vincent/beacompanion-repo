@@ -574,7 +574,6 @@ function updateSystemHealth() {
   });
 }
 
-// User Management Functions
 function showAddUserModal() {
   document.getElementById("modalTitle").textContent = "Add New User";
   document.getElementById("userForm").reset();
@@ -590,7 +589,6 @@ function editUser(userId) {
   document.getElementById("password").required = false;
   document.querySelector(".password-group small").style.display = "block";
 
-  // Fetch user data and populate form
   fetch(
     `/thesis_project/backend/db-files/user-account.php?action=get_user&id=${userId}`
   )
@@ -627,10 +625,17 @@ function deleteUser(userId) {
 }
 
 function closeModal() {
-  document.getElementById("userModal").style.display = "none";
+  const sectionModal = document.getElementById("sectionModal");
+  const faqModal = document.getElementById("faqModal");
+
+  if (sectionModal) {
+    sectionModal.style.display = "none";
+  }
+  if (faqModal) {
+    faqModal.style.display = "none";
+  }
 }
 
-// Search and filter functionality
 function filterUsers() {
   const searchTerm = document.getElementById("userSearch").value.toLowerCase();
   const roleFilter = document.getElementById("roleFilter").value;
@@ -649,9 +654,7 @@ function filterUsers() {
   });
 }
 
-// Add user management event listeners to attachAllListeners function
 function attachUserManagementListeners() {
-  // Search and filter event listeners
   const searchInput = document.getElementById("userSearch");
   const roleFilter = document.getElementById("roleFilter");
 
@@ -663,7 +666,6 @@ function attachUserManagementListeners() {
     roleFilter.addEventListener("change", filterUsers);
   }
 
-  // Form submission
   const userForm = document.getElementById("userForm");
   if (userForm) {
     userForm.addEventListener("submit", function (e) {
@@ -688,7 +690,6 @@ function attachUserManagementListeners() {
     });
   }
 
-  // Close modal when clicking outside
   window.onclick = function (event) {
     const modal = document.getElementById("userModal");
     if (event.target === modal) {
@@ -697,7 +698,6 @@ function attachUserManagementListeners() {
   };
 }
 
-// Update attachAllListeners to include user management listeners
 function attachAllListeners() {
   attachPasswordToggle();
   attachCreatePasswordToggle();
@@ -705,6 +705,160 @@ function attachAllListeners() {
   attachInputValidation();
   updateSystemHealth();
   attachUserManagementListeners();
+
+  document.addEventListener("click", function (e) {
+    const actionElement = e.target.closest("[data-action]");
+    if (!actionElement) return;
+
+    const action = actionElement.dataset.action;
+    const id = actionElement.dataset.id;
+
+    switch (action) {
+      case "showAddSectionModal":
+        showAddSectionModal();
+        break;
+      case "editSection":
+        editSection(id);
+        break;
+      case "deleteSection":
+        deleteSection(id);
+        break;
+      case "closeModal":
+        closeModal();
+        break;
+      case "showAddFaqModal":
+        showAddFaqModal();
+        break;
+      case "editFaq":
+        editFaq(id, e);
+        break;
+      case "deleteFaq":
+        deleteFaq(id, e);
+        break;
+      case "toggleFaq":
+        toggleFaq(actionElement.closest(".faq-item"));
+        break;
+    }
+  });
+
+  const sectionForm = document.getElementById("sectionForm");
+  if (sectionForm) {
+    sectionForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const sectionId = formData.get("sectionId");
+      const title = formData.get("sectionTitle");
+      const contentType = formData.get("contentType");
+      const content = formData.get("sectionContent");
+
+      if (!title || !content) {
+        alert("Title and content are required");
+        return;
+      }
+
+      formData.append(
+        "action",
+        sectionId ? "update_about_section" : "add_about_section"
+      );
+      formData.append("title", title);
+      formData.append("type", contentType);
+
+      if (contentType === "list") {
+        const listItems = content
+          .split("\n")
+          .map((line) => line.replace(/^•\s*/, "").trim())
+          .filter((line) => line !== "");
+
+        formData.set("content", JSON.stringify(listItems));
+      } else {
+        formData.set("content", content);
+      }
+
+      if (sectionId) {
+        formData.append("id", sectionId);
+      }
+
+      fetch("/thesis_project/backend/db-files/content-management.php", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            closeModal();
+            loadAboutContent();
+          } else {
+            alert("Error: " + data.message);
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred while saving the section");
+        });
+    });
+  }
+
+  const faqForm = document.getElementById("faqForm");
+  if (faqForm) {
+    faqForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const faqId = formData.get("faqId");
+      const category = formData.get("faqCategory");
+      const question = formData.get("faqQuestion");
+      const answer = formData.get("faqAnswer");
+
+      if (!category || !question || !answer) {
+        alert("Category, question, and answer are required");
+        return;
+      }
+
+      formData.append("action", faqId ? "update_faq" : "add_faq");
+      formData.append("category", category);
+      formData.append("question", question);
+      formData.append("answer", answer);
+      if (faqId) {
+        formData.append("id", faqId);
+      }
+
+      fetch("/thesis_project/backend/db-files/content-management.php", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            closeModal();
+            loadFaqContent();
+          } else {
+            alert("Error: " + data.message);
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred while saving the FAQ");
+        });
+    });
+  }
+
+  if (document.getElementById("aboutContent")) {
+    loadAboutContent();
+  }
+  if (document.getElementById("faqContent")) {
+    loadFaqContent();
+  }
+
+  window.addEventListener("click", function (event) {
+    const sectionModal = document.getElementById("sectionModal");
+    const faqModal = document.getElementById("faqModal");
+
+    if (event.target === sectionModal) {
+      closeModal();
+    }
+    if (event.target === faqModal) {
+      closeModal();
+    }
+  });
 }
 
 function handleLogout() {
@@ -799,3 +953,291 @@ window.onload = () => {
   const lastPage = sessionStorage.getItem("lastPage") || "loginPage";
   loadPage(lastPage);
 };
+
+function showAddSectionModal() {
+  document.getElementById("modalTitle").textContent = "Add New Section";
+  document.getElementById("sectionForm").reset();
+  document.getElementById("sectionId").value = "";
+  document.getElementById("sectionModal").style.display = "block";
+
+  const contentTypeSelect = document.getElementById("contentType");
+  const contentTextarea = document.getElementById("sectionContent");
+
+  contentTypeSelect.addEventListener("change", function () {
+    if (this.value === "list") {
+      contentTextarea.value = "• First item\n• Second item\n• Third item";
+      contentTextarea.placeholder =
+        "Enter each item on a new line. Each line will be converted to a bullet point.";
+      contentTextarea.addEventListener("keydown", handleListKeydown);
+    } else {
+      contentTextarea.value = "";
+      contentTextarea.placeholder = "Enter your content here...";
+      contentTextarea.removeEventListener("keydown", handleListKeydown);
+    }
+  });
+}
+
+function editSection(id) {
+  document.getElementById("modalTitle").textContent = "Edit Section";
+  document.getElementById("sectionId").value = id;
+  document.getElementById("sectionModal").style.display = "block";
+
+  const contentTypeSelect = document.getElementById("contentType");
+  const contentTextarea = document.getElementById("sectionContent");
+
+  contentTypeSelect.addEventListener("change", function () {
+    if (this.value === "list") {
+      let content = contentTextarea.value;
+      if (!content.includes("•")) {
+        content = content
+          .split("\n")
+          .filter((line) => line.trim() !== "")
+          .map((line) => "• " + line.trim())
+          .join("\n");
+        contentTextarea.value = content;
+      }
+      contentTextarea.placeholder =
+        "Enter each item on a new line. Each line will be converted to a bullet point.";
+      contentTextarea.addEventListener("keydown", handleListKeydown);
+    } else {
+      contentTextarea.placeholder = "Enter your content here...";
+      contentTextarea.removeEventListener("keydown", handleListKeydown);
+    }
+  });
+  fetch(
+    `/thesis_project/backend/db-files/content-management.php?action=get_about_sections`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        const section = data.sections.find((s) => s.id === parseInt(id));
+        if (section) {
+          document.getElementById("sectionTitle").value = section.title;
+          document.getElementById("contentType").value = section.type;
+
+          if (section.type === "list") {
+            try {
+              const listItems = JSON.parse(section.content);
+              contentTextarea.value = listItems
+                .map((item) => "• " + item)
+                .join("\n");
+              contentTextarea.addEventListener("keydown", handleListKeydown);
+            } catch (e) {
+              contentTextarea.value = section.content;
+            }
+          } else {
+            contentTextarea.value = section.content;
+          }
+        }
+      }
+    });
+}
+
+function handleListKeydown(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const textarea = e.target;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = textarea.value;
+    const currentLine = value.substring(0, start).split("\n").pop();
+
+    if (currentLine.trim() === "" || currentLine.trim() === "•") {
+      textarea.value = value.substring(0, start) + "\n" + value.substring(end);
+      textarea.selectionStart = textarea.selectionEnd = start + 1;
+    } else {
+      textarea.value =
+        value.substring(0, start) + "\n• " + value.substring(end);
+      textarea.selectionStart = textarea.selectionEnd = start + 3;
+    }
+  }
+}
+
+function deleteSection(id) {
+  if (confirm("Are you sure you want to delete this section?")) {
+    const formData = new FormData();
+    formData.append("action", "delete_about_section");
+    formData.append("id", id);
+
+    fetch("/thesis_project/backend/db-files/content-management.php", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          loadAboutContent();
+        } else {
+          alert("Error deleting section: " + data.message);
+        }
+      });
+  }
+}
+
+function loadAboutContent() {
+  fetch(
+    "/thesis_project/backend/db-files/content-management.php?action=get_about_sections"
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        displayAboutContent(data.sections);
+      }
+    });
+}
+
+function displayAboutContent(sections) {
+  const container = document.getElementById("aboutContent");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  sections.forEach((section) => {
+    const sectionElement = document.createElement("div");
+    sectionElement.className = "section-item";
+    sectionElement.innerHTML = `
+      <div class="section-header">
+        <h3 class="section-title">${section.title}</h3>
+        <div class="section-actions">
+          <button class="edit-btn" data-action="editSection" data-id="${
+            section.id
+          }">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="delete-btn" data-action="deleteSection" data-id="${
+            section.id
+          }">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+      <div class="section-content">
+        ${
+          section.type === "list"
+            ? `<ul>${JSON.parse(section.content)
+                .map((item) => `<li>${item}</li>`)
+                .join("")}</ul>`
+            : `<p>${section.content}</p>`
+        }
+      </div>
+    `;
+    container.appendChild(sectionElement);
+  });
+}
+
+function showAddFaqModal() {
+  document.getElementById("modalTitle").textContent = "Add New FAQ";
+  document.getElementById("faqForm").reset();
+  document.getElementById("faqId").value = "";
+  document.getElementById("faqModal").style.display = "block";
+}
+
+function editFaq(id, event) {
+  if (event) event.stopPropagation();
+  document.getElementById("modalTitle").textContent = "Edit FAQ";
+  document.getElementById("faqId").value = id;
+  document.getElementById("faqModal").style.display = "block";
+
+  fetch(
+    `/thesis_project/backend/db-files/content-management.php?action=get_faqs`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        const faq = data.faqs.find((f) => f.id === parseInt(id));
+        if (faq) {
+          document.getElementById("faqCategory").value = faq.category;
+          document.getElementById("faqQuestion").value = faq.question;
+          document.getElementById("faqAnswer").value = faq.answer;
+        }
+      }
+    });
+}
+
+function deleteFaq(id, event) {
+  if (event) event.stopPropagation();
+  if (confirm("Are you sure you want to delete this FAQ?")) {
+    const formData = new FormData();
+    formData.append("action", "delete_faq");
+    formData.append("id", id);
+
+    fetch("/thesis_project/backend/db-files/content-management.php", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          loadFaqContent();
+        } else {
+          alert("Error deleting FAQ: " + data.message);
+        }
+      });
+  }
+}
+
+function toggleFaq(element) {
+  element.classList.toggle("active");
+}
+
+function loadFaqContent() {
+  fetch(
+    "/thesis_project/backend/db-files/content-management.php?action=get_faqs"
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        displayFaqContent(data.faqs);
+      }
+    });
+}
+
+function displayFaqContent(faqs) {
+  const container = document.getElementById("faqContent");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const groupedFaqs = faqs.reduce((acc, faq) => {
+    if (!acc[faq.category]) {
+      acc[faq.category] = [];
+    }
+    acc[faq.category].push(faq);
+    return acc;
+  }, {});
+
+  Object.entries(groupedFaqs).forEach(([category, categoryFaqs]) => {
+    const categoryElement = document.createElement("div");
+    categoryElement.className = "faq-category";
+    categoryElement.innerHTML = `
+      <div class="category-header">
+        <h3 class="category-title">${
+          category.charAt(0).toUpperCase() + category.slice(1)
+        } Questions</h3>
+      </div>
+      ${categoryFaqs
+        .map(
+          (faq) => `
+        <div class="faq-item">
+          <div class="faq-header" data-action="toggleFaq">
+            <h4 class="faq-question">${faq.question}</h4>
+            <div class="faq-actions">
+              <button class="edit-btn" data-action="editFaq" data-id="${faq.id}">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="delete-btn" data-action="deleteFaq" data-id="${faq.id}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="faq-answer">
+            <p>${faq.answer}</p>
+          </div>
+        </div>
+      `
+        )
+        .join("")}
+    `;
+    container.appendChild(categoryElement);
+  });
+}

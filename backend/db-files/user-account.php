@@ -34,7 +34,6 @@ function resetSessionIfNeeded($expectedUserId = null)
     }
 }
 
-// Get user details
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_user') {
     $userId = $_GET['id'] ?? null;
 
@@ -53,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     respond(true, ['user' => $user]);
 }
 
-// Add new user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_user') {
     $name = trim($_POST['name'] ?? '');
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
@@ -90,7 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         respond(false, ['errors' => $errors]);
     }
 
-    // Check if email already exists
     $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email');
     $stmt->execute(['email' => $email]);
     if ($stmt->fetch()) {
@@ -116,7 +113,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Update user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_user') {
     $userId = $_POST['userId'] ?? null;
     $name = trim($_POST['name'] ?? '');
@@ -156,7 +152,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         respond(false, ['errors' => $errors]);
     }
 
-    // Check if email already exists for other users
     $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email AND id != :id');
     $stmt->execute(['email' => $email, 'id' => $userId]);
     if ($stmt->fetch()) {
@@ -194,7 +189,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Delete user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_user') {
     $userId = $_POST['id'] ?? null;
 
