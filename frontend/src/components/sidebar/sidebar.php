@@ -63,10 +63,10 @@ if (in_array($role, ['admin', 'doctor', 'patient'])):
                                 <span>Dashboard</span>
                             </a>
                         </li>
-                        <li class="<?php echo $currentPage === 'appointments' ? 'active' : ''; ?>">
-                            <a href="javascript:void(0)" onclick="loadPage('doctorDashboard?page=appointments')">
-                                <span class="material-symbols-rounded">event</span>
-                                <span>Appointments</span>
+                        <li class="<?php echo $currentPage === 'patients' ? 'active' : ''; ?>">
+                            <a href="javascript:void(0)" onclick="loadPage('doctorDashboard?page=patients')">
+                                <span class="material-symbols-rounded">patient_list</span>
+                                <span>Patients</span>
                             </a>
                         </li>
                         <li class="<?php echo $currentPage === 'about' ? 'active' : ''; ?>">
