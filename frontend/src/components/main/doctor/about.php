@@ -1,6 +1,6 @@
 <?php
 $user = $_SESSION['user'] ?? null;
-if (!$user || $user['role'] !== 'patient') {
+if (!$user || $user['role'] !== 'doctor') {
     header('Location: /thesis_project');
     exit();
 }

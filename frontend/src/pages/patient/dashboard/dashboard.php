@@ -71,6 +71,8 @@ $firstName = explode(' ', trim($fullName))[0] ?? 'Guest';
                     include __DIR__ . '/../../../components/main/patient/dashboard.php';
                 } else if ($currentPage === 'about') {
                     include __DIR__ . '/../../../components/main/patient/about.php';
+                } else if ($currentPage === 'faq') {
+                    include __DIR__ . '/../../../components/main/patient/faq.php';
                 }
                 ?>
             </main>
@@ -79,5 +81,5 @@ $firstName = explode(' ', trim($fullName))[0] ?? 'Guest';
             include __DIR__ . '/../../../components/footer/footer.php';
             ?>
         </div>
-        </div>
     </div>
+</div>

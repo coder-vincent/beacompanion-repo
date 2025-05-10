@@ -66,21 +66,44 @@ function loadPage(pageName) {
         const sidebar = document.querySelector(".sidebar");
         const toggleBtn = document.querySelector(".toggle-sidebar");
         const mainContent = document.querySelector("main");
+        const sidebarOverlay = document.querySelector(".sidebar-overlay");
 
         if (sidebar && toggleBtn) {
           console.log("Sidebar and toggle button found after page load");
           toggleBtn.addEventListener("click", () => {
             sidebar.classList.toggle("show");
+            if (sidebarOverlay) {
+              sidebarOverlay.classList.toggle("show");
+            }
             if (mainContent) {
               if (sidebar.classList.contains("show")) {
-                mainContent.style.overflow = "hidden";
-                mainContent.style.pointerEvents = "none";
-                mainContent.style.userSelect = "none";
                 document.body.style.overflow = "hidden";
               } else {
-                mainContent.style.overflow = "";
-                mainContent.style.pointerEvents = "";
-                mainContent.style.userSelect = "";
+                document.body.style.overflow = "";
+              }
+            }
+          });
+
+          // Close sidebar when clicking overlay
+          if (sidebarOverlay) {
+            sidebarOverlay.addEventListener("click", () => {
+              sidebar.classList.remove("show");
+              sidebarOverlay.classList.remove("show");
+              document.body.style.overflow = "";
+            });
+          }
+
+          // Close sidebar when clicking outside on mobile
+          document.addEventListener("click", (e) => {
+            if (window.innerWidth <= 992) {
+              if (
+                !sidebar.contains(e.target) &&
+                !toggleBtn.contains(e.target)
+              ) {
+                sidebar.classList.remove("show");
+                if (sidebarOverlay) {
+                  sidebarOverlay.classList.remove("show");
+                }
                 document.body.style.overflow = "";
               }
             }
@@ -1092,24 +1115,30 @@ function displayAboutContent(sections) {
 
   container.innerHTML = "";
 
+  const isAdmin =
+    document.querySelector('.sidebar-menu li a[onclick*="adminDashboard"]') !==
+    null;
+
   sections.forEach((section) => {
     const sectionElement = document.createElement("div");
     sectionElement.className = "section-item";
     sectionElement.innerHTML = `
       <div class="section-header">
         <h3 class="section-title">${section.title}</h3>
+        ${
+          isAdmin
+            ? `
         <div class="section-actions">
-          <button class="edit-btn" data-action="editSection" data-id="${
-            section.id
-          }">
+          <button class="edit-btn" data-action="editSection" data-id="${section.id}">
             <i class="fas fa-edit"></i>
           </button>
-          <button class="delete-btn" data-action="deleteSection" data-id="${
-            section.id
-          }">
+          <button class="delete-btn" data-action="deleteSection" data-id="${section.id}">
             <i class="fas fa-trash"></i>
           </button>
         </div>
+        `
+            : ""
+        }
       </div>
       <div class="section-content">
         ${
@@ -1198,6 +1227,10 @@ function displayFaqContent(faqs) {
 
   container.innerHTML = "";
 
+  const isAdmin =
+    document.querySelector('.sidebar-menu li a[onclick*="adminDashboard"]') !==
+    null;
+
   const groupedFaqs = faqs.reduce((acc, faq) => {
     if (!acc[faq.category]) {
       acc[faq.category] = [];
@@ -1215,29 +1248,69 @@ function displayFaqContent(faqs) {
           category.charAt(0).toUpperCase() + category.slice(1)
         } Questions</h3>
       </div>
-      ${categoryFaqs
-        .map(
-          (faq) => `
-        <div class="faq-item">
-          <div class="faq-header" data-action="toggleFaq">
-            <h4 class="faq-question">${faq.question}</h4>
-            <div class="faq-actions">
-              <button class="edit-btn" data-action="editFaq" data-id="${faq.id}">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="delete-btn" data-action="deleteFaq" data-id="${faq.id}">
-                <i class="fas fa-trash"></i>
-              </button>
+      <div class="faq-cards">
+        ${categoryFaqs
+          .map(
+            (faq) => `
+          ${
+            isAdmin
+              ? `
+          <div class="faq-item">
+            <div class="faq-header" data-action="toggleFaq">
+              <h4 class="faq-question">${faq.question}</h4>
+              <div class="faq-actions">
+                <button class="edit-btn" data-action="editFaq" data-id="${faq.id}">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="delete-btn" data-action="deleteFaq" data-id="${faq.id}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <div class="faq-answer">
+              <p>${faq.answer}</p>
             </div>
           </div>
-          <div class="faq-answer">
-            <p>${faq.answer}</p>
+          `
+              : `
+          <div class="faq-card">
+            <div class="faq-card-header">
+              <h4 class="faq-card-question">${faq.question}</h4>
+            </div>
+            <div class="faq-card-body">
+              <p>${faq.answer}</p>
+            </div>
           </div>
-        </div>
-      `
-        )
-        .join("")}
+          `
+          }
+        `
+          )
+          .join("")}
+      </div>
     `;
     container.appendChild(categoryElement);
   });
+
+  // Add contact support section for non-admin users
+  if (!isAdmin) {
+    const contactSupport = document.createElement("div");
+    contactSupport.className = "contact-support";
+    contactSupport.innerHTML = `
+      <div class="contact-support-content">
+        <h3>Still Need Help?</h3>
+        <p>If you couldn't find the answer to your question, our support team is here to help.</p>
+        <div class="contact-methods">
+          <div class="contact-method">
+            <i class="fas fa-envelope"></i>
+            <span>support@beacompanion.com</span>
+          </div>
+          <div class="contact-method">
+            <i class="fas fa-phone"></i>
+            <span>+63 912 345 6789</span>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(contactSupport);
+  }
 }
