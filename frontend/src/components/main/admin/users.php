@@ -5,12 +5,10 @@ if (!$user || $user['role'] !== 'admin') {
     exit();
 }
 
-// Fetch all users except admin
 $stmt = $pdo->prepare('SELECT id, name, email, role, created_at, last_login FROM users WHERE role != "admin" ORDER BY created_at DESC');
 $stmt->execute();
 $users = $stmt->fetchAll();
 
-// Get user counts by role
 $stmt = $pdo->prepare('SELECT role, COUNT(*) as count FROM users WHERE role != "admin" GROUP BY role');
 $stmt->execute();
 $roleCounts = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -98,7 +96,6 @@ $roleCounts = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
     </div>
 </div>
 
-<!-- Add/Edit User Modal -->
 <div id="userModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">

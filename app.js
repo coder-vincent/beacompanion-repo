@@ -84,7 +84,6 @@ function loadPage(pageName) {
             }
           });
 
-          // Close sidebar when clicking overlay
           if (sidebarOverlay) {
             sidebarOverlay.addEventListener("click", () => {
               sidebar.classList.remove("show");
@@ -93,7 +92,6 @@ function loadPage(pageName) {
             });
           }
 
-          // Close sidebar when clicking outside on mobile
           document.addEventListener("click", (e) => {
             if (window.innerWidth <= 992) {
               if (
@@ -1291,7 +1289,6 @@ function displayFaqContent(faqs) {
     container.appendChild(categoryElement);
   });
 
-  // Add contact support section for non-admin users
   if (!isAdmin) {
     const contactSupport = document.createElement("div");
     contactSupport.className = "contact-support";

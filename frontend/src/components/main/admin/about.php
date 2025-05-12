@@ -53,7 +53,3 @@ if (!$user || $user['role'] !== 'admin') {
         </form>
     </div>
 </div>
-
-<style>
-    @media (max-width: 768px) {}
-</style>

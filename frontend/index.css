@@ -863,7 +863,6 @@ footer {
   margin: 0;
 }
 
-/* FAQ Cards */
 .faq-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
@@ -2303,7 +2302,6 @@ footer {
   box-shadow: 0 2px 4px var(--shadow-color);
 }
 
-/* Modal Styles */
 .modal {
   display: none;
   position: fixed;
@@ -2438,7 +2436,6 @@ footer {
   transform: translateY(-1px);
 }
 
-/* Responsive Styles */
 @media (max-width: 1200px) {
   .users-container {
     padding: 1.5rem;
@@ -2578,7 +2575,6 @@ footer {
   }
 }
 
-/* Print Styles */
 @media print {
   .users-container {
     padding: 0;
@@ -2609,7 +2605,6 @@ footer {
   }
 }
 
-/* Touch Device Optimizations */
 @media (hover: none) {
   .action-btn:hover {
     transform: none;
@@ -2632,7 +2627,6 @@ footer {
   }
 }
 
-/* FAQ Cards for non-admin users */
 .faq-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -2683,7 +2677,6 @@ footer {
   }
 }
 
-/* Contact Support Section */
 .contact-support {
   margin-top: clamp(2rem, 5vw, 3rem);
   padding: clamp(1.5rem, 4vw, 2rem);
@@ -2743,7 +2736,6 @@ footer {
   font-size: clamp(0.9rem, 2vw, 1rem);
 }
 
-/* Responsive Media Queries */
 @media screen and (max-width: 1200px) {
   .about-container,
   .faq-container {
@@ -2864,7 +2856,6 @@ footer {
   }
 }
 
-/* Touch Device Optimizations */
 @media (hover: none) {
   .faq-card:hover,
   .contact-method:hover {
@@ -2878,7 +2869,6 @@ footer {
   }
 }
 
-/* Main Content Responsive Styles */
 .main-content {
   width: 100%;
   max-width: 1400px;
@@ -2945,7 +2935,6 @@ footer {
   line-height: 1.6;
 }
 
-/* Responsive Media Queries for Main */
 @media screen and (max-width: 1400px) {
   main {
     padding: 1.75rem;
@@ -3059,7 +3048,6 @@ footer {
   }
 }
 
-/* Touch Device Optimizations for Main */
 @media (hover: none) {
   .main-card:hover {
     transform: none;
@@ -3071,7 +3059,6 @@ footer {
   }
 }
 
-/* Print Styles for Main */
 @media print {
   main {
     margin: 0;
@@ -3098,7 +3085,6 @@ footer {
   }
 }
 
-/* Observation and Analysis Dashboard Styles */
 .observation-section {
   display: flex;
   flex-direction: column;
