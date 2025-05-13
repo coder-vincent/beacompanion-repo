@@ -549,10 +549,18 @@ function attachInputValidation() {
   };
 
   nameInput?.addEventListener("input", () => {
-    nameInput.value = nameInput.value.replace(/[^a-zA-Z]/g, "");
+    const value = nameInput.value;
+    const validValue = value.replace(/[^a-zA-Z\s]/g, "");
+    if (value !== validValue) {
+      nameInput.value = validValue;
+    }
 
-    const value = nameInput.value.trim();
-    toggleIcon(iconMap.nameCheck, value.length >= 2, value === "");
+    const trimmedValue = value.trim();
+    toggleIcon(
+      iconMap.nameCheck,
+      trimmedValue.length >= 2,
+      trimmedValue === ""
+    );
   });
 
   emailInput?.addEventListener("input", () => {

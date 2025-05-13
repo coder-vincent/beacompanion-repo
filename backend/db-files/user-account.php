@@ -324,8 +324,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
         $errors['email'] = 'Invalid email format.';
     }
 
-    if (!preg_match('/^[a-zA-Z]{2,}$/', $name)) {
-        $errors['name'] = 'Name must contain only letters and be at least 2 characters.';
+    if (!preg_match('/^[a-zA-Z\s]{2,}$/', $name)) {
+        $errors['name'] = 'Name must contain only letters and spaces, minimum 2 characters.';
     }
 
     if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/', $password)) {
