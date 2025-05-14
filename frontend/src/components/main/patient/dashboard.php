@@ -11,9 +11,22 @@ if (!$user || $user['role'] !== 'patient') {
     <div class="dashboard-main-card">
 
         <div class="observation-section">
-            <!-- <div class="observation-image">
-                <img src="/thesis_project/frontend/src/assets/images/weak-hero.jpg" alt="Observation" />
-            </div> -->
+            <div class="observation-image">
+                <video id="camera-feed" autoplay playsinline muted></video>
+                <div class="camera-overlay">
+                    <div class="camera-status">Camera is off</div>
+                </div>
+                <div class="camera-controls">
+                    <button id="start-camera" class="camera-btn">
+                        <span class="material-icons">videocam</span>
+                        Start Camera
+                    </button>
+                    <button id="stop-camera" class="camera-btn" style="display: none;">
+                        <span class="material-icons">videocam_off</span>
+                        Stop Camera
+                    </button>
+                </div>
+            </div>
             <div class="observation-analysis">
                 <div class="observation-title-bar">
                     Observation and Analysis

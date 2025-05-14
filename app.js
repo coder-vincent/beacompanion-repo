@@ -740,6 +740,7 @@ function attachAllListeners() {
   attachInputValidation();
   updateSystemHealth();
   attachUserManagementListeners();
+  attachCameraControls();
 
   document.addEventListener("click", function (e) {
     const actionElement = e.target.closest("[data-action]");
@@ -1333,5 +1334,68 @@ function displayFaqContent(faqs) {
       </div>
     `;
     container.appendChild(contactSupport);
+  }
+}
+
+function attachCameraControls() {
+  const startButton = document.getElementById("start-camera");
+  const stopButton = document.getElementById("stop-camera");
+  const videoElement = document.getElementById("camera-feed");
+  const observationImage = document.querySelector(".observation-image");
+  const cameraStatus = document.querySelector(".camera-status");
+  let stream = null;
+
+  if (startButton && stopButton && videoElement) {
+    // Check if browser supports getUserMedia
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      startButton.disabled = true;
+      cameraStatus.textContent = "Camera not supported";
+      return;
+    }
+
+    startButton.addEventListener("click", async () => {
+      try {
+        cameraStatus.textContent = "Starting camera...";
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+        });
+
+        videoElement.srcObject = stream;
+        await videoElement.play();
+
+        observationImage.classList.add("camera-active");
+        startButton.style.display = "none";
+        stopButton.style.display = "block";
+        cameraStatus.textContent = "Camera is on";
+      } catch (err) {
+        console.error("Error accessing camera:", err);
+        cameraStatus.textContent = "Camera access denied";
+        alert(
+          "Unable to access camera. Please ensure you have granted camera permissions."
+        );
+      }
+    });
+
+    stopButton.addEventListener("click", () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+        videoElement.srcObject = null;
+        observationImage.classList.remove("camera-active");
+        startButton.style.display = "block";
+        stopButton.style.display = "none";
+        cameraStatus.textContent = "Camera is off";
+      }
+    });
+
+    // Clean up camera when page is unloaded
+    window.addEventListener("beforeunload", () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    });
   }
 }
