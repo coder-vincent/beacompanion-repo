@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
         respond(false, ['message' => 'User ID is required']);
     }
 
-    $stmt = $pdo->prepare('SELECT id, name, email, role FROM users WHERE id = :id AND role != "admin"');
+    $stmt = $pdo->prepare('SELECT id, name, email, role, patient_id, doctor_id FROM users WHERE id = :id AND role != "admin"');
     $stmt->execute(['id' => $userId]);
     $user = $stmt->fetch();
 
@@ -95,20 +95,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 
     try {
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        $createdAt = date('Y-m-d H:i:s');
+        $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare('INSERT INTO users (name, email, password, role, created_at) VALUES (:name, :email, :password, :role, :created_at)');
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+        $currentTime = date('Y-m-d H:i:s');
+
+        $stmt = $pdo->prepare('
+            INSERT INTO users (
+                name, 
+                email, 
+                password, 
+                role, 
+                created_at,
+                last_login
+            ) VALUES (
+                :name, 
+                :email, 
+                :password, 
+                :role, 
+                :created_at,
+                NULL
+            )
+        ');
+
         $stmt->execute([
             'name' => $name,
             'email' => $email,
             'password' => $hashedPassword,
             'role' => $role,
-            'created_at' => $createdAt
+            'created_at' => $currentTime
         ]);
 
+        $userId = $pdo->lastInsertId();
+
+        if ($role === 'patient') {
+            $stmt = $pdo->prepare('UPDATE users SET patient_id = :id WHERE id = :id');
+            $stmt->execute(['id' => $userId]);
+        } else if ($role === 'doctor') {
+            $stmt = $pdo->prepare('UPDATE users SET doctor_id = :id WHERE id = :id');
+            $stmt->execute(['id' => $userId]);
+        }
+
+        $pdo->commit();
         respond(true, ['message' => 'User added successfully']);
     } catch (Exception $e) {
+        $pdo->rollBack();
         respond(false, ['message' => 'Error adding user: ' . $e->getMessage()]);
     }
 }
@@ -161,7 +192,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     try {
         if (!empty($password)) {
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-            $stmt = $pdo->prepare('UPDATE users SET name = :name, email = :email, password = :password, role = :role WHERE id = :id AND role != "admin"');
+            $stmt = $pdo->prepare('
+                UPDATE users 
+                SET name = :name, 
+                    email = :email, 
+                    password = :password, 
+                    role = :role,
+                    patient_id = CASE WHEN :role = "patient" THEN :id ELSE NULL END,
+                    doctor_id = CASE WHEN :role = "doctor" THEN :id ELSE NULL END
+                WHERE id = :id AND role != "admin"
+            ');
             $stmt->execute([
                 'name' => $name,
                 'email' => $email,
@@ -170,7 +210,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 'id' => $userId
             ]);
         } else {
-            $stmt = $pdo->prepare('UPDATE users SET name = :name, email = :email, role = :role WHERE id = :id AND role != "admin"');
+            $stmt = $pdo->prepare('
+                UPDATE users 
+                SET name = :name, 
+                    email = :email, 
+                    role = :role,
+                    patient_id = CASE WHEN :role = "patient" THEN :id ELSE NULL END,
+                    doctor_id = CASE WHEN :role = "doctor" THEN :id ELSE NULL END
+                WHERE id = :id AND role != "admin"
+            ');
             $stmt->execute([
                 'name' => $name,
                 'email' => $email,
@@ -353,7 +401,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
         $authTokenExpiry = date('Y-m-d H:i:s', time() + 3600);
         $hashedAuthToken = password_hash($authToken, PASSWORD_BCRYPT);
 
-        $stmt = $pdo->prepare('INSERT INTO users (email, password, name, role, created_at, auth_token, auth_token_expiry) VALUES (:email, :password, :name, :role, :created_at, :token, :expiry)');
+        $stmt = $pdo->prepare('
+            INSERT INTO users (
+                email, 
+                password, 
+                name, 
+                role, 
+                created_at, 
+                auth_token, 
+                auth_token_expiry,
+                last_login
+            ) VALUES (
+                :email, 
+                :password, 
+                :name, 
+                :role, 
+                :created_at, 
+                :token, 
+                :expiry,
+                :last_login
+            )
+        ');
+
         $stmt->execute([
             'email' => $email,
             'password' => $hashedPassword,
@@ -361,8 +430,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
             'role' => $role,
             'created_at' => $createdAt,
             'token' => $hashedAuthToken,
-            'expiry' => $authTokenExpiry
+            'expiry' => $authTokenExpiry,
+            'last_login' => $createdAt
         ]);
+
+        $userId = $pdo->lastInsertId();
+
+        $stmt = $pdo->prepare('UPDATE users SET patient_id = :id WHERE id = :id');
+        $stmt->execute(['id' => $userId]);
 
         if (!isset($_SESSION['user'])) {
             resetSessionIfNeeded($user['id']);
@@ -370,7 +445,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signup'])) {
 
         session_regenerate_id(true);
         $_SESSION['user'] = [
-            'id' => $pdo->lastInsertId(),
+            'id' => $userId,
             'email' => $email,
             'name' => $name,
             'role' => $role,
@@ -448,24 +523,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $authTokenExpiry = date('Y-m-d H:i:s', time() + 3600);
     $hashedAuthToken = password_hash($authToken, PASSWORD_BCRYPT);
 
-    $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry, last_login = :last_login WHERE email = :email');
-    $stmt->execute([
-        'token' => $hashedAuthToken,
-        'expiry' => $authTokenExpiry,
-        'last_login' => date('Y-m-d H:i:s'),
-        'email' => $email
-    ]);
+    try {
+        $currentTime = date('Y-m-d H:i:s');
+        $stmt = $pdo->prepare('
+            UPDATE users 
+            SET auth_token = :token, 
+                auth_token_expiry = :expiry, 
+                last_login = :last_login 
+            WHERE email = :email
+        ');
+        $stmt->execute([
+            'token' => $hashedAuthToken,
+            'expiry' => $authTokenExpiry,
+            'last_login' => $currentTime,
+            'email' => $email
+        ]);
 
-    $_SESSION['user'] = [
-        'id' => $user['id'],
-        'email' => $user['email'],
-        'name' => $user['name'],
-        'role' => $user['role'],
-        'created_at' => $user['created_at'],
-        'plain_token' => $authToken,
-    ];
+        $_SESSION['user'] = [
+            'id' => $user['id'],
+            'email' => $user['email'],
+            'name' => $user['name'],
+            'role' => $user['role'],
+            'created_at' => $user['created_at'],
+            'plain_token' => $authToken,
+        ];
 
-    respond(true, ['redirectTo' => $user['role'] . "/auth-token?token=" . urlencode($authToken)]);
+        respond(true, ['redirectTo' => $user['role'] . "/auth-token?token=" . urlencode($authToken)]);
+    } catch (Exception $e) {
+        respond(false, ['message' => 'Error updating last login: ' . $e->getMessage()]);
+    }
 }
 
 respond(false, ['errors' => ['request' => 'Invalid form submission.']]);
