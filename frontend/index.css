@@ -4066,6 +4066,10 @@ footer {
   overflow-y: auto;
 }
 
+.modal-body .action-btn.assign-btn {
+  background-color: var(--color-green);
+}
+
 /* Responsive Styles */
 @media (max-width: 1200px) {
   .patients-container {

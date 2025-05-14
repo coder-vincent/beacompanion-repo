@@ -632,23 +632,34 @@ function editUser(userId) {
 }
 
 function deleteUser(userId) {
-  if (confirm("Are you sure you want to delete this user?")) {
-    fetch("/thesis_project/backend/db-files/user-account.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: `action=delete_user&id=${userId}`,
+  showConfirmationModal(
+    "delete_user",
+    userId,
+    "Are you sure you want to delete this user? This action cannot be undone."
+  );
+}
+
+function handleUserDeletion(userId) {
+  fetch("/thesis_project/backend/db-files/user-account.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: `action=delete_user&id=${userId}`,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        showNotification("User deleted successfully!", "success");
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showNotification("Error: " + data.message, "error");
+      }
     })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          location.reload();
-        } else {
-          alert("Error deleting user: " + data.message);
-        }
-      });
-  }
+    .catch((error) => {
+      console.error("Error:", error);
+      showNotification("An error occurred while deleting the user.", "error");
+    });
 }
 
 function closeModal() {
@@ -697,6 +708,20 @@ function attachUserManagementListeners() {
     roleFilter.addEventListener("change", filterUsers);
   }
 
+  // Add event listener for confirmation modal
+  document.addEventListener("click", function (e) {
+    const confirmBtn = e.target.closest(".confirm-btn");
+    if (confirmBtn && confirmBtn.dataset.confirmAction === "delete_user") {
+      const userId = confirmBtn.dataset.patientId; // Reusing patientId data attribute for userId
+      const modal = document.getElementById("confirmationModal");
+      if (modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "";
+        handleUserDeletion(userId);
+      }
+    }
+  });
+
   const userForm = document.getElementById("userForm");
   if (userForm) {
     userForm.addEventListener("submit", function (e) {
@@ -743,6 +768,62 @@ function attachPatientManagementListeners() {
     showUnassignedModalBtn.addEventListener("click", function (e) {
       e.preventDefault();
       showUnassignedPatientsModal();
+    });
+  }
+
+  // Real-time search for assigned patients
+  const patientSearch = document.getElementById("patientSearch");
+  if (patientSearch) {
+    patientSearch.addEventListener("input", function () {
+      const searchTerm = this.value.toLowerCase();
+      const rows = document.querySelectorAll("#myPatientsTable tbody tr");
+
+      rows.forEach((row) => {
+        const name = row.cells[0].textContent.toLowerCase();
+        const email = row.cells[1].textContent.toLowerCase();
+        const lastObservation = row.cells[2].textContent.toLowerCase();
+        const matchesSearch =
+          name.includes(searchTerm) ||
+          email.includes(searchTerm) ||
+          lastObservation.includes(searchTerm);
+        row.style.display = matchesSearch ? "" : "none";
+      });
+
+      // Update URL with search parameter without reloading
+      const url = new URL(window.location.href);
+      if (searchTerm) {
+        url.searchParams.set("search", searchTerm);
+      } else {
+        url.searchParams.delete("search");
+      }
+      window.history.replaceState({}, "", url);
+    });
+  }
+
+  // Real-time search for unassigned patients
+  const unassignedSearch = document.getElementById("unassignedSearch");
+  if (unassignedSearch) {
+    unassignedSearch.addEventListener("input", function () {
+      const searchTerm = this.value.toLowerCase();
+      const rows = document.querySelectorAll(
+        "#unassignedPatientsTable tbody tr"
+      );
+
+      rows.forEach((row) => {
+        const name = row.cells[0].textContent.toLowerCase();
+        const email = row.cells[1].textContent.toLowerCase();
+        const matchesSearch =
+          name.includes(searchTerm) || email.includes(searchTerm);
+        row.style.display = matchesSearch ? "" : "none";
+      });
+    });
+  }
+
+  // Prevent form submission for search
+  const searchForm = document.getElementById("searchForm");
+  if (searchForm) {
+    searchForm.addEventListener("submit", function (e) {
+      e.preventDefault();
     });
   }
 
@@ -810,25 +891,6 @@ function attachPatientManagementListeners() {
         break;
     }
   });
-
-  // Event listener for unassigned patients search
-  const unassignedSearch = document.getElementById("unassignedSearch");
-  if (unassignedSearch) {
-    unassignedSearch.addEventListener("input", function () {
-      const searchTerm = this.value.toLowerCase();
-      const rows = document.querySelectorAll(
-        "#unassignedPatientsTable tbody tr"
-      );
-
-      rows.forEach((row) => {
-        const name = row.cells[0].textContent.toLowerCase();
-        const email = row.cells[1].textContent.toLowerCase();
-        const matchesSearch =
-          name.includes(searchTerm) || email.includes(searchTerm);
-        row.style.display = matchesSearch ? "" : "none";
-      });
-    });
-  }
 
   // Close modals when clicking outside
   document.addEventListener("click", function (e) {

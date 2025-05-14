@@ -43,13 +43,11 @@ if ($page > $total_pages && $total_pages > 0) {
         <h2>Patients Management</h2>
         <div class="patients-controls">
             <div class="search-container">
-                <form id="searchForm" class="search-form">
+                <div class="search-form">
                     <input type="text" id="patientSearch" name="search" placeholder="Search patients..."
                         value="<?php echo htmlspecialchars($search); ?>" class="search-input">
-                    <button type="submit" class="search-btn">
-                        <span class="material-icons">search</span>
-                    </button>
-                </form>
+                    <span class="material-icons search-icon">search</span>
+                </div>
             </div>
             <button type="button" class="action-btn assign-btn" data-action="showUnassignedModal"
                 id="showUnassignedModalBtn">
