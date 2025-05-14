@@ -411,10 +411,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         $authTokenExpiry = date('Y-m-d H:i:s', time() + 3600);
         $hashedAuthToken = password_hash($authToken, PASSWORD_BCRYPT);
 
-        $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry, last_login = NOW() WHERE email = :email');
+        $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry, last_login = :last_login WHERE email = :email');
         $stmt->execute([
             'token' => $hashedAuthToken,
             'expiry' => $authTokenExpiry,
+            'last_login' => date('Y-m-d H:i:s'),
             'email' => $adminEmail
         ]);
 
@@ -447,10 +448,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $authTokenExpiry = date('Y-m-d H:i:s', time() + 3600);
     $hashedAuthToken = password_hash($authToken, PASSWORD_BCRYPT);
 
-    $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry, last_login = NOW() WHERE email = :email');
+    $stmt = $pdo->prepare('UPDATE users SET auth_token = :token, auth_token_expiry = :expiry, last_login = :last_login WHERE email = :email');
     $stmt->execute([
         'token' => $hashedAuthToken,
         'expiry' => $authTokenExpiry,
+        'last_login' => date('Y-m-d H:i:s'),
         'email' => $email
     ]);
 

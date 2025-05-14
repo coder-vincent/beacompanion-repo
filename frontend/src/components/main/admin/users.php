@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Asia/Manila');
 $user = $_SESSION['user'] ?? null;
 if (!$user || $user['role'] !== 'admin') {
     header('Location: /thesis_project');
@@ -76,7 +77,7 @@ $roleCounts = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
                                 </span>
                             </td>
                             <td><?php echo date('M d, Y', strtotime($user['created_at'])); ?></td>
-                            <td><?php echo $user['last_login'] ? date('M d, Y H:i', strtotime($user['last_login'])) : 'Never'; ?>
+                            <td><?php echo $user['last_login'] ? date('D, M d, Y H:i', strtotime($user['last_login'])) : 'Never'; ?>
                             </td>
                             <td>
                                 <div class="action-buttons">

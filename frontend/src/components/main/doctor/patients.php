@@ -7,5 +7,4 @@ if (!$user || $user['role'] !== 'doctor') {
 ?>
 
 <div class="patients-container">
-    <h2>Patients Management</h2>
-</div>
+    <h2>Patients Management</h2></div>

@@ -69,6 +69,8 @@ $firstName = explode(' ', trim($fullName))[0] ?? 'Guest';
                 $currentPage = $_GET['page'] ?? 'dashboard';
                 if ($currentPage === 'dashboard') {
                     include __DIR__ . '/../../../components/main/patient/dashboard.php';
+                } else if ($currentPage === 'records') {
+                    include __DIR__ . '/../../../components/main/patient/records.php';
                 } else if ($currentPage === 'about') {
                     include __DIR__ . '/../../../components/main/patient/about.php';
                 } else if ($currentPage === 'faq') {

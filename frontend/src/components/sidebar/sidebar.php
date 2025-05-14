@@ -12,7 +12,7 @@ if (in_array($role, ['admin', 'doctor', 'patient'])):
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
-                <img src="/thesis_project/frontend/src/assets/images/logo-beacompanion.png" alt="BEACompanion Logo">
+                <img src="/thesis_project/frontend/public/images/beacompanion-logo.svg" alt="BEACompanion Logo">
             </div>
             <div class="sidebar-company">
                 <div class="sidebar-company-name">BEACompanion</div>
@@ -92,6 +92,12 @@ if (in_array($role, ['admin', 'doctor', 'patient'])):
                             <a href="javascript:void(0)" onclick="loadPage('patientDashboard?page=dashboard')">
                                 <span class="material-symbols-rounded">dashboard</span>
                                 <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="<?php echo $currentPage === 'records' ? 'active' : ''; ?>">
+                            <a href="javascript:void(0)" onclick="loadPage('patientDashboard?page=records')">
+                                <span class="material-symbols-rounded">folder</span>
+                                <span>Records</span>
                             </a>
                         </li>
                         <li class="<?php echo $currentPage === 'about' ? 'active' : ''; ?>">

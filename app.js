@@ -12,10 +12,16 @@ const pageMapping = {
   patientDashboard: "frontend/src/pages/patient/dashboard/dashboard.php",
 
   patientMainDashboard: "frontend/src/components/main/patient/dashboard.php",
+  patientMainRecords: "frontend/src/components/main/patient/records.php",
   patientMainAbout: "frontend/src/components/main/patient/about.php",
+  patientMainFaq: "frontend/src/components/main/patient/faq.php",
   adminMainDashboard: "frontend/src/components/main/admin/dashboard.php",
   adminMainAbout: "frontend/src/components/main/admin/about.php",
   adminMainFaq: "frontend/src/components/main/admin/faq.php",
+  doctorMainDashboard: "frontend/src/components/main/doctor/dashboard.php",
+  doctorMainPatient: "frontend/src/components/main/doctor/patient.php",
+  doctorMainAbout: "frontend/src/components/main/doctor/about.php",
+  doctorMainFaq: "frontend/src/components/main/doctor/faq.php",
 };
 
 function loadPage(pageName) {
@@ -476,22 +482,13 @@ function attachFormAction() {
               const tokenMatch = path.match(
                 /^\/?(admin|doctor|patient)\/auth-token$/
               );
-              const dashboardMatch = path.match(
-                /^\/?(admin|doctor|patient)\/dashboard$/
-              );
 
               if (tokenMatch && token) {
                 const role = tokenMatch[1];
                 sessionStorage.setItem("authToken", token);
 
-                const newUrl = `${basePath}/auth-token?token=${encodeURIComponent(
-                  token
-                )}`;
-                history.pushState(null, "", newUrl);
+                history.replaceState(null, "", basePath + "/");
 
-                loadPage(`${role}Dashboard`);
-              } else if (dashboardMatch) {
-                const role = dashboardMatch[1];
                 loadPage(`${role}Dashboard`);
               } else {
                 sessionStorage.clear();
@@ -656,12 +653,16 @@ function deleteUser(userId) {
 function closeModal() {
   const sectionModal = document.getElementById("sectionModal");
   const faqModal = document.getElementById("faqModal");
+  const userModal = document.getElementById("userModal");
 
   if (sectionModal) {
     sectionModal.style.display = "none";
   }
   if (faqModal) {
     faqModal.style.display = "none";
+  }
+  if (userModal) {
+    userModal.style.display = "none";
   }
 }
 
@@ -711,10 +712,15 @@ function attachUserManagementListeners() {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            location.reload();
+            closeModal();
+            loadPage("adminDashboard?page=users");
           } else {
             alert("Error: " + data.message);
           }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred while saving the user");
         });
     });
   }
@@ -960,6 +966,7 @@ window.onload = () => {
           if (data.status === "success") {
             sessionStorage.setItem("authToken", token);
             loadPage(`${role}Dashboard`);
+            history.replaceState(null, "", basePath + "/");
           } else {
             sessionStorage.removeItem("authToken");
             loadPage("loginPage");
@@ -979,8 +986,17 @@ window.onload = () => {
     return;
   }
 
-  const lastPage = sessionStorage.getItem("lastPage") || "loginPage";
-  loadPage(lastPage);
+  const lastPage = sessionStorage.getItem("lastPage");
+  if (lastPage && lastPage.includes("Dashboard")) {
+    loadPage(lastPage);
+  } else {
+    const role = pathname.split("/")[1];
+    if (role && ["admin", "doctor", "patient"].includes(role)) {
+      loadPage(`${role}Dashboard`);
+    } else {
+      loadPage("loginPage");
+    }
+  }
 };
 
 function showAddSectionModal() {
