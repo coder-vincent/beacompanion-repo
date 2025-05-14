@@ -1000,6 +1000,8 @@ footer {
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
   backdrop-filter: blur(4px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-content {
@@ -3001,9 +3003,21 @@ footer {
     padding: 1.5rem;
   }
 
+  .main-content {
+    padding: 0 0.5rem;
+  }
+
   .main-grid {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.25rem;
+  }
+
+  .records-container,
+  .patients-container,
+  .about-container,
+  .faq-container {
+    padding: 1.5rem;
+    overflow: auto;
   }
 }
 
@@ -3026,6 +3040,56 @@ footer {
   .main-card {
     padding: 1.25rem;
   }
+
+  .dashboard-content {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "navbar"
+      "main"
+      "footer";
+  }
+
+  aside {
+    position: fixed;
+    width: 280px;
+    left: -280px;
+    transition: left 0.3s ease;
+    height: calc(100vh - 80px);
+    top: 80px;
+  }
+
+  aside.show {
+    left: 0;
+  }
+
+  .sidebar {
+    width: 280px;
+    left: -280px;
+    height: calc(100vh - 80px);
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  .records-container,
+  .patients-container,
+  .about-container,
+  .faq-container {
+    padding: 1.25rem;
+  }
+
+  .patients-header,
+  .records-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .search-container,
+  .date-filter-container {
+    width: 100%;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -3044,12 +3108,44 @@ footer {
     gap: 1rem;
   }
 
-  .main-section {
-    margin-bottom: 1.5rem;
+  .sidebar {
+    width: 260px;
+    left: -260px;
+    height: calc(100vh - 72px);
   }
 
-  .main-header {
-    margin-bottom: 1.25rem;
+  aside {
+    width: 260px;
+    left: -260px;
+    height: calc(100vh - 72px);
+  }
+
+  .records-container,
+  .patients-container,
+  .about-container,
+  .faq-container {
+    padding: 1rem;
+  }
+
+  .modal-content {
+    margin: 10% auto;
+    padding: 1.5rem;
+    width: 95%;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .cancel-btn,
+  .submit-btn,
+  .action-btn {
+    width: 100%;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.75rem;
   }
 }
 
@@ -3068,16 +3164,34 @@ footer {
     padding: 1rem;
   }
 
-  .main-section {
-    margin-bottom: 1.25rem;
+  .sidebar {
+    width: 100%;
+    left: -100%;
+    height: calc(100vh - 56px);
   }
 
-  .main-header {
-    margin-bottom: 1rem;
+  aside {
+    width: 100%;
+    left: -100%;
+    height: calc(100vh - 56px);
   }
 
-  .main-card-title {
-    font-size: 1.1rem;
+  .records-container,
+  .patients-container,
+  .about-container,
+  .faq-container {
+    padding: 0.75rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.625rem;
+    font-size: 0.9rem;
+  }
+
+  .action-btn {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.85rem;
   }
 }
 
@@ -3090,12 +3204,22 @@ footer {
     padding: 0.875rem;
   }
 
-  .main-section {
-    margin-bottom: 1rem;
+  .records-container,
+  .patients-container,
+  .about-container,
+  .faq-container {
+    padding: 0.5rem;
   }
 
-  .main-header {
-    margin-bottom: 0.875rem;
+  .table th,
+  .table td {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .action-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
   }
 }
 
