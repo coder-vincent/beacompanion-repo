@@ -20,12 +20,10 @@ CREATE TABLE IF NOT EXISTS observations (
     id INT PRIMARY KEY AUTO_INCREMENT,
     patient_id INT NOT NULL,
     doctor_id INT NOT NULL,
-    -- Behavioral Patterns
     fidgeting_score INT DEFAULT 0,
     leaving_seat_score INT DEFAULT 0,
     waiting_turns_score INT DEFAULT 0,
     eye_gaze_score INT DEFAULT 0,
-    -- Speech Patterns
     interruptions_score INT DEFAULT 0,
     excessive_talking_score INT DEFAULT 0,
     remarks TEXT DEFAULT '',

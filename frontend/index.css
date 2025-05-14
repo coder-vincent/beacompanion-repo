@@ -2310,7 +2310,6 @@ footer {
   box-shadow: 0 2px 4px rgba(231, 76, 60, 0.2);
 }
 
-/* Responsive adjustments for action buttons */
 @media (max-width: 768px) {
   .action-buttons {
     gap: 0.375rem;
@@ -3282,7 +3281,7 @@ footer {
   height: 100%;
   object-fit: cover;
   background-color: #000;
-  transform: scaleX(-1); /* Mirror the video feed */
+  transform: scaleX(-1);
 }
 
 .camera-overlay {
@@ -3519,7 +3518,6 @@ footer {
   justify-content: center;
 }
 
-/* Records Styles */
 .records-container {
   padding: clamp(1rem, 3vw, 2rem);
   max-width: 1400px;
@@ -3712,7 +3710,6 @@ footer {
   margin: 1rem 0;
 }
 
-/* Responsive Styles */
 @media (max-width: 1200px) {
   .records-container {
     padding: 1.5rem;
@@ -3855,7 +3852,6 @@ footer {
   }
 }
 
-/* Print Styles */
 @media print {
   .records-container {
     padding: 0;
@@ -3891,7 +3887,6 @@ footer {
   }
 }
 
-/* Touch Device Optimizations */
 @media (hover: none) {
   .records-table tbody tr:hover {
     background-color: transparent;
@@ -3906,7 +3901,6 @@ footer {
   }
 }
 
-/* Patients Page Styles */
 .patients-container {
   padding: clamp(1rem, 3vw, 2rem);
   background-color: var(--background-color);
@@ -4154,7 +4148,6 @@ footer {
   }
 }
 
-/* Modal Styles */
 .modal-content {
   background-color: var(--background-color);
   border-radius: 1rem;
@@ -4194,7 +4187,6 @@ footer {
   background-color: var(--color-green);
 }
 
-/* Responsive Styles */
 @media (max-width: 1200px) {
   .patients-container {
     padding: 1.5rem;

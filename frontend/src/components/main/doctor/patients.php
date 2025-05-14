@@ -5,17 +5,14 @@ if (!$user || $user['role'] !== 'doctor') {
     exit();
 }
 
-// Pagination settings
 $patients_per_page = 10;
-$page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1; // Ensure page is at least 1
+$page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
 $offset = ($page - 1) * $patients_per_page;
 
-// Search functionality
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $search_condition = $search ? "AND (u.name LIKE :search OR u.email LIKE :search)" : "";
 $search_param = $search ? "%$search%" : null;
 
-// Get total count for pagination
 $count_stmt = $pdo->prepare("
     SELECT COUNT(*) 
     FROM users u 
@@ -31,7 +28,6 @@ $count_stmt->execute($count_params);
 $total_patients = $count_stmt->fetchColumn();
 $total_pages = ceil($total_patients / $patients_per_page);
 
-// Ensure page doesn't exceed total pages
 if ($page > $total_pages && $total_pages > 0) {
     $page = $total_pages;
     $offset = ($page - 1) * $patients_per_page;
@@ -70,7 +66,6 @@ if ($page > $total_pages && $total_pages > 0) {
                 </thead>
                 <tbody>
                     <?php
-                    // Fetch doctor's assigned patients with pagination and search
                     $stmt = $pdo->prepare("
                         SELECT u.id, u.name, u.email, 
                                MAX(o.created_at) as last_observation
@@ -83,7 +78,6 @@ if ($page > $total_pages && $total_pages > 0) {
                         LIMIT :limit OFFSET :offset
                     ");
 
-                    // Bind parameters separately to ensure proper type handling
                     $stmt->bindValue(':doctor_id', $user['id'], PDO::PARAM_INT);
                     $stmt->bindValue(':limit', $patients_per_page, PDO::PARAM_INT);
                     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -170,7 +164,6 @@ if ($page > $total_pages && $total_pages > 0) {
         </div>
     <?php endif; ?>
 
-    <!-- Unassigned Patients Modal -->
     <div id="unassignedPatientsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -195,7 +188,6 @@ if ($page > $total_pages && $total_pages > 0) {
                         </thead>
                         <tbody>
                             <?php
-                            // Fetch unassigned patients
                             $stmt = $pdo->prepare('
                                 SELECT id, name, email 
                                 FROM users 
@@ -238,7 +230,6 @@ if ($page > $total_pages && $total_pages > 0) {
         </div>
     </div>
 
-    <!-- Patient Records Modal -->
     <div id="patientRecordsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">

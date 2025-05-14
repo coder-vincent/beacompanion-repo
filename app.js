@@ -708,11 +708,10 @@ function attachUserManagementListeners() {
     roleFilter.addEventListener("change", filterUsers);
   }
 
-  // Add event listener for confirmation modal
   document.addEventListener("click", function (e) {
     const confirmBtn = e.target.closest(".confirm-btn");
     if (confirmBtn && confirmBtn.dataset.confirmAction === "delete_user") {
-      const userId = confirmBtn.dataset.patientId; // Reusing patientId data attribute for userId
+      const userId = confirmBtn.dataset.patientId;
       const modal = document.getElementById("confirmationModal");
       if (modal) {
         modal.style.display = "none";
@@ -760,7 +759,6 @@ function attachUserManagementListeners() {
 }
 
 function attachPatientManagementListeners() {
-  // Direct event listener for the Add New Patient button
   const showUnassignedModalBtn = document.getElementById(
     "showUnassignedModalBtn"
   );
@@ -771,7 +769,6 @@ function attachPatientManagementListeners() {
     });
   }
 
-  // Real-time search for assigned patients
   const patientSearch = document.getElementById("patientSearch");
   if (patientSearch) {
     patientSearch.addEventListener("input", function () {
@@ -789,7 +786,6 @@ function attachPatientManagementListeners() {
         row.style.display = matchesSearch ? "" : "none";
       });
 
-      // Update URL with search parameter without reloading
       const url = new URL(window.location.href);
       if (searchTerm) {
         url.searchParams.set("search", searchTerm);
@@ -800,7 +796,6 @@ function attachPatientManagementListeners() {
     });
   }
 
-  // Real-time search for unassigned patients
   const unassignedSearch = document.getElementById("unassignedSearch");
   if (unassignedSearch) {
     unassignedSearch.addEventListener("input", function () {
@@ -819,7 +814,6 @@ function attachPatientManagementListeners() {
     });
   }
 
-  // Prevent form submission for search
   const searchForm = document.getElementById("searchForm");
   if (searchForm) {
     searchForm.addEventListener("submit", function (e) {
@@ -827,15 +821,12 @@ function attachPatientManagementListeners() {
     });
   }
 
-  // Event delegation for all action buttons and modal close buttons
   document.addEventListener("click", function (e) {
-    // Handle modal close buttons
     if (e.target.closest(".close-modal")) {
       closeAllModals();
       return;
     }
 
-    // Handle confirmation modal buttons
     if (e.target.closest(".confirm-btn")) {
       const action = e.target.dataset.confirmAction;
       const patientId = e.target.dataset.patientId;
@@ -854,7 +845,6 @@ function attachPatientManagementListeners() {
       return;
     }
 
-    // Handle cancel button in confirmation modal
     if (e.target.closest(".cancel-btn")) {
       const modal = document.getElementById("confirmationModal");
       if (modal) {
@@ -864,7 +854,6 @@ function attachPatientManagementListeners() {
       return;
     }
 
-    // Handle action buttons
     const actionBtn = e.target.closest(".action-btn");
     if (!actionBtn) return;
 
@@ -892,7 +881,6 @@ function attachPatientManagementListeners() {
     }
   });
 
-  // Close modals when clicking outside
   document.addEventListener("click", function (e) {
     const modal = e.target.closest(".modal");
     if (modal && e.target === modal) {
@@ -900,7 +888,6 @@ function attachPatientManagementListeners() {
     }
   });
 
-  // Close modals when pressing Escape key
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
       closeAllModals();
@@ -909,30 +896,27 @@ function attachPatientManagementListeners() {
 }
 
 function showUnassignedPatientsModal() {
-  console.log("Showing unassigned patients modal"); // Debug log
+  console.log("Showing unassigned patients modal");
   const modal = document.getElementById("unassignedPatientsModal");
   if (modal) {
     modal.style.display = "block";
-    // Focus the search input when modal opens
     const searchInput = document.getElementById("unassignedSearch");
     if (searchInput) {
       searchInput.value = "";
       searchInput.focus();
     }
-    // Prevent body scrolling when modal is open
     document.body.style.overflow = "hidden";
   } else {
-    console.error("Unassigned patients modal not found"); // Debug log
+    console.error("Unassigned patients modal not found");
   }
 }
 
 function closeAllModals() {
-  console.log("Closing all modals"); // Debug log
+  console.log("Closing all modals");
   const modals = document.querySelectorAll(".modal");
   modals.forEach((modal) => {
     modal.style.display = "none";
   });
-  // Restore body scrolling
   document.body.style.overflow = "";
 }
 
@@ -944,7 +928,6 @@ function attachRecordsManagementListeners() {
 
   if (!tableBody || !searchInput || !dateFilter) return;
 
-  // Function to fetch all records
   async function fetchRecords() {
     try {
       const patientId =
@@ -971,7 +954,6 @@ function attachRecordsManagementListeners() {
     }
   }
 
-  // Function to display records
   function displayRecords(records) {
     if (records.length === 0) {
       tableBody.innerHTML = `
@@ -1023,13 +1005,11 @@ function attachRecordsManagementListeners() {
       .join("");
   }
 
-  // Function to format date
   function formatDate(dateString) {
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString("en-US", options);
   }
 
-  // Function to escape HTML
   function escapeHtml(unsafe) {
     if (!unsafe) return "";
     return unsafe
@@ -1040,7 +1020,6 @@ function attachRecordsManagementListeners() {
       .replace(/'/g, "&#039;");
   }
 
-  // Function to show error message
   function showError(message) {
     tableBody.innerHTML = `
             <tr>
@@ -1049,14 +1028,12 @@ function attachRecordsManagementListeners() {
         `;
   }
 
-  // Function to filter records
   function filterRecords() {
     const searchTerm = searchInput.value.toLowerCase();
     const dateValue = dateFilter.value;
 
     let filteredRecords = allRecords;
 
-    // Apply date filter
     if (dateValue) {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -1080,7 +1057,6 @@ function attachRecordsManagementListeners() {
       });
     }
 
-    // Apply search filter
     if (searchTerm) {
       filteredRecords = filteredRecords.filter((record) => {
         const formattedDate = formatDate(record.created_at);
@@ -1100,11 +1076,9 @@ function attachRecordsManagementListeners() {
     displayRecords(filteredRecords);
   }
 
-  // Event listeners
   searchInput.addEventListener("input", filterRecords);
   dateFilter.addEventListener("change", filterRecords);
 
-  // Initial fetch
   fetchRecords();
 }
 
@@ -1151,6 +1125,85 @@ function attachAllListeners() {
       case "toggleFaq":
         toggleFaq(actionElement.closest(".faq-item"));
         break;
+    }
+  });
+
+  document.addEventListener("click", function (e) {
+    const confirmBtn = e.target.closest(".confirm-btn");
+    if (confirmBtn) {
+      const action = confirmBtn.dataset.confirmAction;
+      const id = confirmBtn.dataset.patientId || confirmBtn.dataset.id;
+      const modal = document.getElementById("confirmationModal");
+
+      if (modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "";
+
+        if (action === "delete_section") {
+          const formData = new FormData();
+          formData.append("action", "delete_about_section");
+          formData.append("id", id);
+
+          fetch("/thesis_project/backend/db-files/content-management.php", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                showNotification("Section deleted successfully!", "success");
+                loadAboutContent();
+              } else {
+                showNotification("Error: " + data.message, "error");
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              showNotification(
+                "An error occurred while deleting the section.",
+                "error"
+              );
+            });
+        } else if (action === "delete_faq") {
+          const formData = new FormData();
+          formData.append("action", "delete_faq");
+          formData.append("id", id);
+
+          fetch("/thesis_project/backend/db-files/content-management.php", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                showNotification("FAQ deleted successfully!", "success");
+                loadFaqContent();
+              } else {
+                showNotification("Error: " + data.message, "error");
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              showNotification(
+                "An error occurred while deleting the FAQ.",
+                "error"
+              );
+            });
+        } else if (action === "assign") {
+          assignPatient(id);
+        } else if (action === "remove") {
+          removePatient(id);
+        }
+      }
+    }
+
+    const cancelBtn = e.target.closest(".cancel-btn");
+    if (cancelBtn) {
+      const modal = document.getElementById("confirmationModal");
+      if (modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "";
+      }
     }
   });
 
@@ -1477,24 +1530,11 @@ function handleListKeydown(e) {
 }
 
 function deleteSection(id) {
-  if (confirm("Are you sure you want to delete this section?")) {
-    const formData = new FormData();
-    formData.append("action", "delete_about_section");
-    formData.append("id", id);
-
-    fetch("/thesis_project/backend/db-files/content-management.php", {
-      method: "POST",
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          loadAboutContent();
-        } else {
-          alert("Error deleting section: " + data.message);
-        }
-      });
-  }
+  showConfirmationModal(
+    "delete_section",
+    id,
+    "Are you sure you want to delete this section? This action cannot be undone."
+  );
 }
 
 function loadAboutContent() {
@@ -1585,24 +1625,11 @@ function editFaq(id, event) {
 
 function deleteFaq(id, event) {
   if (event) event.stopPropagation();
-  if (confirm("Are you sure you want to delete this FAQ?")) {
-    const formData = new FormData();
-    formData.append("action", "delete_faq");
-    formData.append("id", id);
-
-    fetch("/thesis_project/backend/db-files/content-management.php", {
-      method: "POST",
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          loadFaqContent();
-        } else {
-          alert("Error deleting FAQ: " + data.message);
-        }
-      });
-  }
+  showConfirmationModal(
+    "delete_faq",
+    id,
+    "Are you sure you want to delete this FAQ? This action cannot be undone."
+  );
 }
 
 function toggleFaq(element) {
@@ -1776,7 +1803,6 @@ function attachCameraControls() {
 }
 
 function showConfirmationModal(action, patientId, message) {
-  // Create confirmation modal if it doesn't exist
   let modal = document.getElementById("confirmationModal");
   if (!modal) {
     modal = document.createElement("div");
@@ -1802,7 +1828,6 @@ function showConfirmationModal(action, patientId, message) {
     document.body.appendChild(modal);
   }
 
-  // Update modal content
   const messageEl = modal.querySelector(".confirmation-message");
   const confirmBtn = modal.querySelector(".confirm-btn");
 
@@ -1812,7 +1837,6 @@ function showConfirmationModal(action, patientId, message) {
     confirmBtn.dataset.patientId = patientId;
   }
 
-  // Show modal
   modal.style.display = "block";
   document.body.style.overflow = "hidden";
 }
@@ -1876,7 +1900,6 @@ function removePatient(patientId) {
 }
 
 function showNotification(message, type = "info") {
-  // Create notification element if it doesn't exist
   let notification = document.getElementById("notification");
   if (!notification) {
     notification = document.createElement("div");
@@ -1884,12 +1907,10 @@ function showNotification(message, type = "info") {
     document.body.appendChild(notification);
   }
 
-  // Update notification content
   notification.textContent = message;
   notification.className = `notification ${type}`;
   notification.style.display = "block";
 
-  // Hide notification after 3 seconds
   setTimeout(() => {
     notification.style.display = "none";
   }, 3000);
@@ -1904,11 +1925,9 @@ function viewPatientRecords(patientId) {
     return;
   }
 
-  // Show loading state
   content.innerHTML = '<div class="loading">Loading records...</div>';
   modal.style.display = "block";
 
-  // Fetch patient records
   fetch(
     `/thesis_project/backend/db-files/observations.php?action=get_all&patient_id=${patientId}`
   )
@@ -1930,7 +1949,6 @@ function viewPatientRecords(patientId) {
           html += "<tr>";
           html += `<td>${new Date(obs.created_at).toLocaleDateString()}</td>`;
 
-          // Behavioral Patterns
           html += "<td>";
           Object.entries(obs.behavioral_patterns).forEach(
             ([pattern, score]) => {
@@ -1941,8 +1959,6 @@ function viewPatientRecords(patientId) {
             }
           );
           html += "</td>";
-
-          // Speech Patterns
           html += "<td>";
           Object.entries(obs.speech_patterns).forEach(([pattern, score]) => {
             html += `<div class="pattern-item">

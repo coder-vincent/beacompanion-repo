@@ -1,8 +1,4 @@
 <?php
-// require_once __DIR__ . '/../../../../backend/config/config.php';
-// require_once __DIR__ . '/../../../../backend/auth/dbconnect.php';
-
-// Get patient ID from session
 $user = $_SESSION['user'] ?? null;
 if (!$user || $user['role'] !== 'patient') {
     header('Location: /thesis_project');

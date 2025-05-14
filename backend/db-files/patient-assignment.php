@@ -17,7 +17,6 @@ function respond($success, $data = [])
     exit;
 }
 
-// Verify user is logged in and is a doctor
 $user = $_SESSION['user'] ?? null;
 if (!$user || $user['role'] !== 'doctor') {
     respond(false, ['message' => 'Unauthorized access']);
@@ -39,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     respond(false, ['message' => 'Doctor ID is required']);
                 }
 
-                // Verify the patient exists and is not assigned to any doctor
                 $stmt = $pdo->prepare('
                     SELECT id, doctor_id 
                     FROM users 
@@ -57,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     respond(false, ['message' => 'Patient is already assigned to a doctor']);
                 }
 
-                // Assign the patient to the doctor
                 $stmt = $pdo->prepare('
                     UPDATE users 
                     SET doctor_id = :doctor_id 
@@ -77,7 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
 
             case 'remove':
-                // Verify the patient is assigned to this doctor
                 $stmt = $pdo->prepare('
                     SELECT id, doctor_id 
                     FROM users 
@@ -95,7 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     respond(false, ['message' => 'Patient not found or not assigned to you']);
                 }
 
-                // Remove the patient assignment
                 $stmt = $pdo->prepare('
                     UPDATE users 
                     SET doctor_id = NULL 
