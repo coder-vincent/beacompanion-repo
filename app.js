@@ -22,6 +22,7 @@ const pageMapping = {
   doctorMainPatient: "frontend/src/components/main/doctor/patient.php",
   doctorMainAbout: "frontend/src/components/main/doctor/about.php",
   doctorMainFaq: "frontend/src/components/main/doctor/faq.php",
+  doctorMainPatients: "frontend/src/components/main/doctor/patients.php",
 };
 
 function loadPage(pageName) {
@@ -733,6 +734,318 @@ function attachUserManagementListeners() {
   };
 }
 
+function attachPatientManagementListeners() {
+  // Direct event listener for the Add New Patient button
+  const showUnassignedModalBtn = document.getElementById(
+    "showUnassignedModalBtn"
+  );
+  if (showUnassignedModalBtn) {
+    showUnassignedModalBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      showUnassignedPatientsModal();
+    });
+  }
+
+  // Event delegation for all action buttons and modal close buttons
+  document.addEventListener("click", function (e) {
+    // Handle modal close buttons
+    if (e.target.closest(".close-modal")) {
+      closeAllModals();
+      return;
+    }
+
+    // Handle confirmation modal buttons
+    if (e.target.closest(".confirm-btn")) {
+      const action = e.target.dataset.confirmAction;
+      const patientId = e.target.dataset.patientId;
+      const modal = document.getElementById("confirmationModal");
+
+      if (modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "";
+
+        if (action === "assign") {
+          assignPatient(patientId);
+        } else if (action === "remove") {
+          removePatient(patientId);
+        }
+      }
+      return;
+    }
+
+    // Handle cancel button in confirmation modal
+    if (e.target.closest(".cancel-btn")) {
+      const modal = document.getElementById("confirmationModal");
+      if (modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "";
+      }
+      return;
+    }
+
+    // Handle action buttons
+    const actionBtn = e.target.closest(".action-btn");
+    if (!actionBtn) return;
+
+    const action = actionBtn.dataset.action;
+    const patientId = actionBtn.dataset.patientId;
+
+    switch (action) {
+      case "assign":
+        showConfirmationModal(
+          "assign",
+          patientId,
+          "Are you sure you want to assign this patient to yourself?"
+        );
+        break;
+      case "remove":
+        showConfirmationModal(
+          "remove",
+          patientId,
+          "Are you sure you want to remove this patient from your list?"
+        );
+        break;
+      case "view":
+        viewPatientRecords(patientId);
+        break;
+    }
+  });
+
+  // Event listener for unassigned patients search
+  const unassignedSearch = document.getElementById("unassignedSearch");
+  if (unassignedSearch) {
+    unassignedSearch.addEventListener("input", function () {
+      const searchTerm = this.value.toLowerCase();
+      const rows = document.querySelectorAll(
+        "#unassignedPatientsTable tbody tr"
+      );
+
+      rows.forEach((row) => {
+        const name = row.cells[0].textContent.toLowerCase();
+        const email = row.cells[1].textContent.toLowerCase();
+        const matchesSearch =
+          name.includes(searchTerm) || email.includes(searchTerm);
+        row.style.display = matchesSearch ? "" : "none";
+      });
+    });
+  }
+
+  // Close modals when clicking outside
+  document.addEventListener("click", function (e) {
+    const modal = e.target.closest(".modal");
+    if (modal && e.target === modal) {
+      closeAllModals();
+    }
+  });
+
+  // Close modals when pressing Escape key
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      closeAllModals();
+    }
+  });
+}
+
+function showUnassignedPatientsModal() {
+  console.log("Showing unassigned patients modal"); // Debug log
+  const modal = document.getElementById("unassignedPatientsModal");
+  if (modal) {
+    modal.style.display = "block";
+    // Focus the search input when modal opens
+    const searchInput = document.getElementById("unassignedSearch");
+    if (searchInput) {
+      searchInput.value = "";
+      searchInput.focus();
+    }
+    // Prevent body scrolling when modal is open
+    document.body.style.overflow = "hidden";
+  } else {
+    console.error("Unassigned patients modal not found"); // Debug log
+  }
+}
+
+function closeAllModals() {
+  console.log("Closing all modals"); // Debug log
+  const modals = document.querySelectorAll(".modal");
+  modals.forEach((modal) => {
+    modal.style.display = "none";
+  });
+  // Restore body scrolling
+  document.body.style.overflow = "";
+}
+
+function attachRecordsManagementListeners() {
+  const tableBody = document.getElementById("recordsTableBody");
+  const searchInput = document.getElementById("recordSearch");
+  const dateFilter = document.getElementById("dateFilter");
+  let allRecords = [];
+
+  if (!tableBody || !searchInput || !dateFilter) return;
+
+  // Function to fetch all records
+  async function fetchRecords() {
+    try {
+      const patientId =
+        document.querySelector("[data-patient-id]")?.dataset.patientId;
+      if (!patientId) {
+        showError("Patient ID not found");
+        return;
+      }
+
+      const response = await fetch(
+        `/thesis_project/backend/db-files/observations.php?action=get_all&patient_id=${patientId}`
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        allRecords = data.observations;
+        displayRecords(allRecords);
+      } else {
+        showError("Failed to fetch records");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      showError("Error fetching records");
+    }
+  }
+
+  // Function to display records
+  function displayRecords(records) {
+    if (records.length === 0) {
+      tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="no-records">No observation records found.</td>
+                </tr>
+            `;
+      return;
+    }
+
+    tableBody.innerHTML = records
+      .map(
+        (record) => `
+            <tr>
+                <td>${formatDate(record.created_at)}</td>
+                <td>${record.doctor_name || "N/A"}</td>
+                <td>
+                    ${Object.entries(record.behavioral_patterns)
+                      .map(
+                        ([pattern, score]) => `
+                        <div class="pattern-item">
+                            <span class="pattern-name">${escapeHtml(
+                              pattern
+                            )}</span>
+                            <span class="pattern-score">${score}</span>
+                        </div>
+                    `
+                      )
+                      .join("")}
+                </td>
+                <td>
+                    ${Object.entries(record.speech_patterns)
+                      .map(
+                        ([pattern, score]) => `
+                        <div class="pattern-item">
+                            <span class="pattern-name">${escapeHtml(
+                              pattern
+                            )}</span>
+                            <span class="pattern-score">${score}</span>
+                        </div>
+                    `
+                      )
+                      .join("")}
+                </td>
+                <td>${escapeHtml(record.remarks)}</td>
+            </tr>
+        `
+      )
+      .join("");
+  }
+
+  // Function to format date
+  function formatDate(dateString) {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString("en-US", options);
+  }
+
+  // Function to escape HTML
+  function escapeHtml(unsafe) {
+    if (!unsafe) return "";
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // Function to show error message
+  function showError(message) {
+    tableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="no-records">${message}</td>
+            </tr>
+        `;
+  }
+
+  // Function to filter records
+  function filterRecords() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const dateValue = dateFilter.value;
+
+    let filteredRecords = allRecords;
+
+    // Apply date filter
+    if (dateValue) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      filteredRecords = filteredRecords.filter((record) => {
+        const recordDate = new Date(record.created_at);
+        switch (dateValue) {
+          case "today":
+            return recordDate >= today;
+          case "week":
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return recordDate >= weekAgo;
+          case "month":
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            return recordDate >= monthAgo;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Apply search filter
+    if (searchTerm) {
+      filteredRecords = filteredRecords.filter((record) => {
+        const formattedDate = formatDate(record.created_at);
+        const searchableText = [
+          formattedDate,
+          record.doctor_name,
+          record.remarks,
+          ...Object.keys(record.behavioral_patterns),
+          ...Object.keys(record.speech_patterns),
+        ]
+          .join(" ")
+          .toLowerCase();
+        return searchableText.includes(searchTerm);
+      });
+    }
+
+    displayRecords(filteredRecords);
+  }
+
+  // Event listeners
+  searchInput.addEventListener("input", filterRecords);
+  dateFilter.addEventListener("change", filterRecords);
+
+  // Initial fetch
+  fetchRecords();
+}
+
 function attachAllListeners() {
   attachPasswordToggle();
   attachCreatePasswordToggle();
@@ -741,6 +1054,8 @@ function attachAllListeners() {
   updateSystemHealth();
   attachUserManagementListeners();
   attachCameraControls();
+  attachPatientManagementListeners();
+  attachRecordsManagementListeners();
 
   document.addEventListener("click", function (e) {
     const actionElement = e.target.closest("[data-action]");
@@ -1346,7 +1661,6 @@ function attachCameraControls() {
   let stream = null;
 
   if (startButton && stopButton && videoElement) {
-    // Check if browser supports getUserMedia
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       startButton.disabled = true;
       cameraStatus.textContent = "Camera not supported";
@@ -1391,11 +1705,204 @@ function attachCameraControls() {
       }
     });
 
-    // Clean up camera when page is unloaded
     window.addEventListener("beforeunload", () => {
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
       }
     });
   }
+}
+
+function showConfirmationModal(action, patientId, message) {
+  // Create confirmation modal if it doesn't exist
+  let modal = document.getElementById("confirmationModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "confirmationModal";
+    modal.className = "modal";
+    modal.innerHTML = `
+      <div class="modal-content confirmation-modal">
+        <div class="modal-header">
+          <h3>Confirm Action</h3>
+          <button class="close-modal">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="confirmation-message"></p>
+          <div class="confirmation-buttons">
+            <button class="confirm-btn">Confirm</button>
+            <button class="cancel-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  // Update modal content
+  const messageEl = modal.querySelector(".confirmation-message");
+  const confirmBtn = modal.querySelector(".confirm-btn");
+
+  if (messageEl) messageEl.textContent = message;
+  if (confirmBtn) {
+    confirmBtn.dataset.confirmAction = action;
+    confirmBtn.dataset.patientId = patientId;
+  }
+
+  // Show modal
+  modal.style.display = "block";
+  document.body.style.overflow = "hidden";
+}
+
+function assignPatient(patientId) {
+  const doctorId = document.querySelector("[data-doctor-id]")?.dataset.doctorId;
+  if (!doctorId) {
+    alert("Error: Doctor ID not found");
+    return;
+  }
+
+  fetch("/thesis_project/backend/db-files/patient-assignment.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: `action=assign&patient_id=${patientId}&doctor_id=${doctorId}`,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        showNotification("Patient assigned successfully!", "success");
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showNotification("Error: " + data.message, "error");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      showNotification(
+        "An error occurred while assigning the patient.",
+        "error"
+      );
+    });
+}
+
+function removePatient(patientId) {
+  fetch("/thesis_project/backend/db-files/patient-assignment.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: `action=remove&patient_id=${patientId}`,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        showNotification("Patient removed successfully!", "success");
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showNotification("Error: " + data.message, "error");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      showNotification(
+        "An error occurred while removing the patient.",
+        "error"
+      );
+    });
+}
+
+function showNotification(message, type = "info") {
+  // Create notification element if it doesn't exist
+  let notification = document.getElementById("notification");
+  if (!notification) {
+    notification = document.createElement("div");
+    notification.id = "notification";
+    document.body.appendChild(notification);
+  }
+
+  // Update notification content
+  notification.textContent = message;
+  notification.className = `notification ${type}`;
+  notification.style.display = "block";
+
+  // Hide notification after 3 seconds
+  setTimeout(() => {
+    notification.style.display = "none";
+  }, 3000);
+}
+
+function viewPatientRecords(patientId) {
+  const modal = document.getElementById("patientRecordsModal");
+  const content = document.getElementById("patientRecordsContent");
+
+  if (!modal || !content) {
+    console.error("Modal elements not found");
+    return;
+  }
+
+  // Show loading state
+  content.innerHTML = '<div class="loading">Loading records...</div>';
+  modal.style.display = "block";
+
+  // Fetch patient records
+  fetch(
+    `/thesis_project/backend/db-files/observations.php?action=get_all&patient_id=${patientId}`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        if (data.observations.length === 0) {
+          content.innerHTML =
+            '<div class="no-records">No observation records found for this patient.</div>';
+          return;
+        }
+
+        let html = '<table class="records-table">';
+        html +=
+          "<thead><tr><th>Date</th><th>Behavioral Patterns</th><th>Speech Patterns</th><th>Remarks</th></tr></thead>";
+        html += "<tbody>";
+
+        data.observations.forEach((obs) => {
+          html += "<tr>";
+          html += `<td>${new Date(obs.created_at).toLocaleDateString()}</td>`;
+
+          // Behavioral Patterns
+          html += "<td>";
+          Object.entries(obs.behavioral_patterns).forEach(
+            ([pattern, score]) => {
+              html += `<div class="pattern-item">
+              <span class="pattern-name">${pattern}</span>
+              <span class="pattern-score">${score}</span>
+            </div>`;
+            }
+          );
+          html += "</td>";
+
+          // Speech Patterns
+          html += "<td>";
+          Object.entries(obs.speech_patterns).forEach(([pattern, score]) => {
+            html += `<div class="pattern-item">
+              <span class="pattern-name">${pattern}</span>
+              <span class="pattern-score">${score}</span>
+            </div>`;
+          });
+          html += "</td>";
+
+          html += `<td>${obs.remarks || "-"}</td>`;
+          html += "</tr>";
+        });
+
+        html += "</tbody></table>";
+        content.innerHTML = html;
+      } else {
+        content.innerHTML = `<div class="error">Error: ${data.message}</div>`;
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      content.innerHTML =
+        '<div class="error">An error occurred while loading the records.</div>';
+    });
 }

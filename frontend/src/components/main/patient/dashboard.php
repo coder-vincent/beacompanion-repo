@@ -31,60 +31,65 @@ if (!$user || $user['role'] !== 'patient') {
             <div class="observation-analysis">
                 <div class="observation-title-bar">
                     Latest Observation and Analysis
-                    <?php if ($latestObservation): ?>
-                        <span
-                            class="observation-date"><?php echo date('F j, Y', strtotime($latestObservation['created_at'])); ?></span>
-                    <?php endif; ?>
                 </div>
-                <?php if ($latestObservation): ?>
-                    <div class="observation-cards">
-                        <div class="observation-card">
-                            <h4>Behavioral Patterns</h4>
-                            <div class="observation-list">
-                                <?php
-                                $behavioralPatterns = json_decode($latestObservation['behavioral_patterns'], true);
-                                foreach ($behavioralPatterns as $pattern => $score):
-                                    ?>
-                                    <div class="observation-item">
-                                        <span class="observation-label">
-                                            <span class="material-icons observation-icon">touch_app</span>
-                                            <?php echo htmlspecialchars($pattern); ?>
-                                        </span>
-                                        <span class="observation-score"><?php echo $score; ?></span>
-                                    </div>
-                                <?php endforeach; ?>
+                <div class="observation-cards">
+                    <div class="observation-card">
+                        <h4>Behavioral Patterns</h4>
+                        <div class="observation-list">
+                            <div class="observation-item">
+                                <span class="observation-label">
+                                    <span class="material-icons observation-icon">touch_app</span>
+                                    Fidgeting
+                                </span>
+                                <span class="observation-score">0</span>
                             </div>
-                        </div>
-                        <div class="observation-card">
-                            <h4>Speech Patterns</h4>
-                            <div class="observation-list">
-                                <?php
-                                $speechPatterns = json_decode($latestObservation['speech_patterns'], true);
-                                foreach ($speechPatterns as $pattern => $score):
-                                    ?>
-                                    <div class="observation-item">
-                                        <span class="observation-label">
-                                            <span class="material-icons observation-icon">record_voice_over</span>
-                                            <?php echo htmlspecialchars($pattern); ?>
-                                        </span>
-                                        <span class="observation-score"><?php echo $score; ?></span>
-                                    </div>
-                                <?php endforeach; ?>
+                            <div class="observation-item">
+                                <span class="observation-label">
+                                    <span class="material-icons observation-icon">touch_app</span>
+                                    Leaving Seat Inappropriately
+                                </span>
+                                <span class="observation-score">0</span>
+                            </div>
+                            <div class="observation-item">
+                                <span class="observation-label">
+                                    <span class="material-icons observation-icon">touch_app</span>
+                                    Difficulty Waiting for Turns
+                                </span>
+                                <span class="observation-score">0</span>
+                            </div>
+                            <div class="observation-item">
+                                <span class="observation-label">
+                                    <span class="material-icons observation-icon">touch_app</span>
+                                    Eye Gaze Shifting
+                                </span>
+                                <span class="observation-score">0</span>
                             </div>
                         </div>
                     </div>
-                    <div class="observation-remarks">
-                        <b>Remarks:</b>
-                        <div class="remarks-box"><?php echo htmlspecialchars($latestObservation['remarks']); ?></div>
+                    <div class="observation-card">
+                        <h4>Speech Patterns</h4>
+                        <div class="observation-list">
+                            <div class="observation-item">
+                                <span class="observation-label">
+                                    <span class="material-icons observation-icon">record_voice_over</span>
+                                    Excessive Interruptions During Conversations
+                                </span>
+                                <span class="observation-score">0</span>
+                            </div>
+                            <div class="observation-item">
+                                <span class="observation-label">
+                                    <span class="material-icons observation-icon">record_voice_over</span>
+                                    Rapid or Excessive Talking
+                                </span>
+                                <span class="observation-score">0</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="observation-doctor">
-                        <b>Observed by:</b> Dr. <?php echo htmlspecialchars($latestObservation['doctor_name']); ?>
-                    </div>
-                <?php else: ?>
-                    <div class="no-observations">
-                        <p>No observations available yet.</p>
-                    </div>
-                <?php endif; ?>
+                </div>
+                <div class="observation-remarks">
+                    <b>Remarks:</b>
+                    <div class="remarks-box">No remarks available.</div>
+                </div>
             </div>
         </div>
     </div>
