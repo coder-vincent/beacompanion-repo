@@ -29,9 +29,7 @@
 
                 <div class="user-forgot-password-form">
                     <?php
-
-                    include($_SERVER['DOCUMENT_ROOT'] . '/thesis_project/frontend/src/components/form/forgot-password-form/forgot-password-form.php');
-
+                    include('../../components/form/forgot-password-form/forgot-password-form.php');
                     ?>
                 </div>
             </div>

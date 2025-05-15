@@ -2,6 +2,19 @@ const databaseMapping = {
   userAccount: "backend/db-files/user-account.php",
 };
 
+function getBasePath() {
+  const isLocal = window.location.hostname === "localhost";
+  const pathname = window.location.pathname;
+
+  // If we're in a subdirectory, extract it from the pathname
+  const pathParts = pathname.split("/").filter(Boolean);
+  if (pathParts.length > 0) {
+    return "/" + pathParts[0];
+  }
+
+  return "";
+}
+
 const pageMapping = {
   loginPage: "frontend/src/pages/login/login.php",
   signupPage: "frontend/src/pages/sign-up/sign-up.php",
@@ -28,6 +41,7 @@ const pageMapping = {
 function loadPage(pageName) {
   const [basePage, params] = pageName.split("?");
   const url = pageMapping[basePage];
+  const basePath = getBasePath();
 
   if (!url) {
     console.error("404: Page not found");
@@ -38,91 +52,95 @@ function loadPage(pageName) {
     sessionStorage.setItem("lastPage", pageName);
   }
 
-  const fullUrl = params ? `${url}?${params}` : url;
+  const fullUrl = params
+    ? `${basePath}/${url}?${params}`
+    : `${basePath}/${url}`;
 
   const mainContent = document.querySelector("main");
   if (mainContent) {
     mainContent.innerHTML = '<div class="loading">Loading...</div>';
   }
 
-  fetch(fullUrl)
-    .then((res) => res.text())
-    .then((html) => {
-      if (basePage.includes("Main")) {
-        const mainContent = document.querySelector("main");
-        if (mainContent) {
-          mainContent.innerHTML = html;
-          updateSidebarActiveState(basePage);
-        }
-      } else {
-        document.getElementById("app").innerHTML = html;
-      }
-
-      attachAllListeners();
-
-      if (!window.gsap) {
-        console.warn("GSAP not found");
-        return;
-      }
-
-      if (
-        basePage === "adminDashboard" ||
-        basePage === "doctorDashboard" ||
-        basePage === "patientDashboard"
-      ) {
-        const sidebar = document.querySelector(".sidebar");
-        const toggleBtn = document.querySelector(".toggle-sidebar");
-        const mainContent = document.querySelector("main");
-        const sidebarOverlay = document.querySelector(".sidebar-overlay");
-
-        if (sidebar && toggleBtn) {
-          console.log("Sidebar and toggle button found after page load");
-          toggleBtn.addEventListener("click", () => {
-            sidebar.classList.toggle("show");
-            if (sidebarOverlay) {
-              sidebarOverlay.classList.toggle("show");
-            }
-            if (mainContent) {
-              if (sidebar.classList.contains("show")) {
-                document.body.style.overflow = "hidden";
-              } else {
-                document.body.style.overflow = "";
-              }
-            }
-          });
-
-          if (sidebarOverlay) {
-            sidebarOverlay.addEventListener("click", () => {
-              sidebar.classList.remove("show");
-              sidebarOverlay.classList.remove("show");
-              document.body.style.overflow = "";
-            });
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", fullUrl, true);
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        const html = xhr.responseText;
+        if (basePage.includes("Main")) {
+          const mainContent = document.querySelector("main");
+          if (mainContent) {
+            mainContent.innerHTML = html;
+            updateSidebarActiveState(basePage);
           }
-
-          document.addEventListener("click", (e) => {
-            if (window.innerWidth <= 992) {
-              if (
-                !sidebar.contains(e.target) &&
-                !toggleBtn.contains(e.target)
-              ) {
-                sidebar.classList.remove("show");
-                if (sidebarOverlay) {
-                  sidebarOverlay.classList.remove("show");
-                }
-                document.body.style.overflow = "";
-              }
-            }
-          });
         } else {
-          console.log(
-            "Sidebar or toggle button not found in loaded page:",
-            basePage
-          );
+          document.getElementById("app").innerHTML = html;
         }
-      }
 
-      if (basePage === "patientDashboard") {
-        setTimeout(() => {
+        attachAllListeners();
+
+        if (!window.gsap) {
+          console.warn("GSAP not found");
+          return;
+        }
+
+        if (
+          basePage === "adminDashboard" ||
+          basePage === "doctorDashboard" ||
+          basePage === "patientDashboard"
+        ) {
+          const sidebar = document.querySelector(".sidebar");
+          const toggleBtn = document.querySelector(".toggle-sidebar");
+          const mainContent = document.querySelector("main");
+          const sidebarOverlay = document.querySelector(".sidebar-overlay");
+
+          if (sidebar && toggleBtn) {
+            console.log("Sidebar and toggle button found after page load");
+            toggleBtn.addEventListener("click", () => {
+              sidebar.classList.toggle("show");
+              if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle("show");
+              }
+              if (mainContent) {
+                if (sidebar.classList.contains("show")) {
+                  document.body.style.overflow = "hidden";
+                } else {
+                  document.body.style.overflow = "";
+                }
+              }
+            });
+
+            if (sidebarOverlay) {
+              sidebarOverlay.addEventListener("click", () => {
+                sidebar.classList.remove("show");
+                sidebarOverlay.classList.remove("show");
+                document.body.style.overflow = "";
+              });
+            }
+
+            document.addEventListener("click", (e) => {
+              if (window.innerWidth <= 992) {
+                if (
+                  !sidebar.contains(e.target) &&
+                  !toggleBtn.contains(e.target)
+                ) {
+                  sidebar.classList.remove("show");
+                  if (sidebarOverlay) {
+                    sidebarOverlay.classList.remove("show");
+                  }
+                  document.body.style.overflow = "";
+                }
+              }
+            });
+          } else {
+            console.log(
+              "Sidebar or toggle button not found in loaded page:",
+              basePage
+            );
+          }
+        }
+
+        if (basePage === "patientDashboard") {
           const dashboard = document.querySelector("#patient-dashboard");
           const welcomeReveal = document.querySelector(".welcome-reveal");
           const h2 = document.querySelector("#patient-page h2");
@@ -190,9 +208,7 @@ function loadPage(pageName) {
               }
             },
           });
-        }, 100);
-      } else if (basePage === "forgotPasswordPage") {
-        setTimeout(() => {
+        } else if (basePage === "forgotPasswordPage") {
           const backBtnWrapper = document.getElementById("backBtnWrapper");
           const backText = backBtnWrapper?.querySelector(".back-text");
 
@@ -215,23 +231,32 @@ function loadPage(pageName) {
               });
             });
           }
-        }, 100);
-      } else if (basePage === "resetPasswordPage") {
-        const token = sessionStorage.getItem("resetToken");
-        const tokenInput = document.getElementById("reset-token");
-        if (token && tokenInput) {
-          tokenInput.value = token;
+        } else if (basePage === "resetPasswordPage") {
+          const token = sessionStorage.getItem("resetToken");
+          const tokenInput = document.getElementById("reset-token");
+          if (token && tokenInput) {
+            tokenInput.value = token;
+          }
+        }
+      } else {
+        console.error("Error loading page:", xhr.status);
+        const mainContent = document.querySelector("main");
+        if (mainContent) {
+          mainContent.innerHTML =
+            '<div class="error">Error loading content. Please try again.</div>';
         }
       }
-    })
-    .catch((error) => {
-      console.error("Error loading page:", error);
-      const mainContent = document.querySelector("main");
-      if (mainContent) {
-        mainContent.innerHTML =
-          '<div class="error">Error loading content. Please try again.</div>';
-      }
-    });
+    }
+  };
+  xhr.onerror = function () {
+    console.error("Network error occurred");
+    const mainContent = document.querySelector("main");
+    if (mainContent) {
+      mainContent.innerHTML =
+        '<div class="error">Network error. Please check your connection and try again.</div>';
+    }
+  };
+  xhr.send();
 }
 
 function updateSidebarActiveState(pageName) {
@@ -301,13 +326,14 @@ function attachFormAction() {
   document.querySelectorAll("form[data-action-key]").forEach((form) => {
     const actionKey = form.dataset.actionKey;
     const actionUrl = databaseMapping[actionKey] ?? "";
+    const basePath = getBasePath();
 
     if (!actionUrl) {
       console.warn(`No action URL found for: ${actionKey}`);
       return;
     }
 
-    form.action = actionUrl;
+    form.action = `${basePath}/${actionUrl}`;
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -429,7 +455,14 @@ function attachFormAction() {
         method: "POST",
         body: formData,
       })
-        .then((res) => res.json())
+        .then(async (res) => {
+          const text = await res.text();
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            throw new Error("Invalid JSON response: " + text);
+          }
+        })
         .then((data) => {
           document
             .querySelectorAll(".error-main, .success-main")
@@ -616,10 +649,15 @@ function editUser(userId) {
   document.getElementById("password").required = false;
   document.querySelector(".password-group small").style.display = "block";
 
-  fetch(
-    `/thesis_project/backend/db-files/user-account.php?action=get_user&id=${userId}`
-  )
-    .then((response) => response.json())
+  fetch(`backend/db-files/user-account.php?action=get_user&id=${userId}`)
+    .then(async (response) => {
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error("Invalid JSON response: " + text);
+      }
+    })
     .then((data) => {
       if (data.success) {
         document.getElementById("name").value = data.user.name;
@@ -640,14 +678,21 @@ function deleteUser(userId) {
 }
 
 function handleUserDeletion(userId) {
-  fetch("/thesis_project/backend/db-files/user-account.php", {
+  fetch(`backend/db-files/user-account.php`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: `action=delete_user&id=${userId}`,
   })
-    .then((response) => response.json())
+    .then(async (response) => {
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error("Invalid JSON response: " + text);
+      }
+    })
     .then((data) => {
       if (data.success) {
         showNotification("User deleted successfully!", "success");
@@ -730,11 +775,18 @@ function attachUserManagementListeners() {
       const userId = formData.get("userId");
       formData.append("action", userId ? "update_user" : "add_user");
 
-      fetch("/thesis_project/backend/db-files/user-account.php", {
+      fetch(`backend/db-files/user-account.php`, {
         method: "POST",
         body: formData,
       })
-        .then((response) => response.json())
+        .then(async (response) => {
+          const text = await response.text();
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            throw new Error("Invalid JSON response: " + text);
+          }
+        })
         .then((data) => {
           if (data.success) {
             closeModal();
@@ -938,9 +990,15 @@ function attachRecordsManagementListeners() {
       }
 
       const response = await fetch(
-        `/thesis_project/backend/db-files/observations.php?action=get_all&patient_id=${patientId}`
+        `backend/db-files/observations.php?action=get_all&patient_id=${patientId}`
       );
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error("Invalid JSON response: " + text);
+      }
 
       if (data.success) {
         allRecords = data.observations;
@@ -1144,11 +1202,18 @@ function attachAllListeners() {
           formData.append("action", "delete_about_section");
           formData.append("id", id);
 
-          fetch("/thesis_project/backend/db-files/content-management.php", {
+          fetch(`backend/db-files/content-management.php`, {
             method: "POST",
             body: formData,
           })
-            .then((response) => response.json())
+            .then(async (response) => {
+              const text = await response.text();
+              try {
+                return JSON.parse(text);
+              } catch (e) {
+                throw new Error("Invalid JSON response: " + text);
+              }
+            })
             .then((data) => {
               if (data.success) {
                 showNotification("Section deleted successfully!", "success");
@@ -1169,11 +1234,18 @@ function attachAllListeners() {
           formData.append("action", "delete_faq");
           formData.append("id", id);
 
-          fetch("/thesis_project/backend/db-files/content-management.php", {
+          fetch(`backend/db-files/content-management.php`, {
             method: "POST",
             body: formData,
           })
-            .then((response) => response.json())
+            .then(async (response) => {
+              const text = await response.text();
+              try {
+                return JSON.parse(text);
+              } catch (e) {
+                throw new Error("Invalid JSON response: " + text);
+              }
+            })
             .then((data) => {
               if (data.success) {
                 showNotification("FAQ deleted successfully!", "success");
@@ -1244,11 +1316,18 @@ function attachAllListeners() {
         formData.append("id", sectionId);
       }
 
-      fetch("/thesis_project/backend/db-files/content-management.php", {
+      fetch(`backend/db-files/content-management.php`, {
         method: "POST",
         body: formData,
       })
-        .then((response) => response.json())
+        .then(async (response) => {
+          const text = await response.text();
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            throw new Error("Invalid JSON response: " + text);
+          }
+        })
         .then((data) => {
           if (data.success) {
             closeModal();
@@ -1287,11 +1366,18 @@ function attachAllListeners() {
         formData.append("id", faqId);
       }
 
-      fetch("/thesis_project/backend/db-files/content-management.php", {
+      fetch(`backend/db-files/content-management.php`, {
         method: "POST",
         body: formData,
       })
-        .then((response) => response.json())
+        .then(async (response) => {
+          const text = await response.text();
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            throw new Error("Invalid JSON response: " + text);
+          }
+        })
         .then((data) => {
           if (data.success) {
             closeModal();
@@ -1329,21 +1415,16 @@ function attachAllListeners() {
 
 function handleLogout() {
   sessionStorage.clear();
-
-  const isLocal = window.location.hostname === "localhost";
-  const basePath = isLocal ? "/thesis_project" : "";
+  const basePath = getBasePath();
   window.location.href = basePath + "/";
 }
 
 window.onload = () => {
   const pathname = window.location.pathname;
   const searchParams = new URLSearchParams(window.location.search);
-
-  const isLocal = window.location.hostname === "localhost";
-  const basePath = isLocal ? "/thesis_project" : "";
-
   const authToken = sessionStorage.getItem("authToken");
   const isResetPasswordPage = pathname.endsWith("/reset-password");
+  const basePath = getBasePath();
 
   if (isResetPasswordPage) {
     const errorMsg = searchParams.get("error");
@@ -1389,9 +1470,13 @@ window.onload = () => {
 
     if (token) {
       fetch(`${basePath}/${role}/auth-token?token=${encodeURIComponent(token)}`)
-        .then((response) => {
-          if (!response.ok) throw new Error("Network error");
-          return response.json();
+        .then(async (response) => {
+          const text = await response.text();
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            throw new Error("Invalid JSON response: " + text);
+          }
         })
         .then((data) => {
           if (data.status === "success") {
@@ -1480,10 +1565,15 @@ function editSection(id) {
       contentTextarea.removeEventListener("keydown", handleListKeydown);
     }
   });
-  fetch(
-    `/thesis_project/backend/db-files/content-management.php?action=get_about_sections`
-  )
-    .then((response) => response.json())
+  fetch(`backend/db-files/content-management.php?action=get_about_sections`)
+    .then(async (response) => {
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error("Invalid JSON response: " + text);
+      }
+    })
     .then((data) => {
       if (data.success) {
         const section = data.sections.find((s) => s.id === parseInt(id));
@@ -1538,10 +1628,15 @@ function deleteSection(id) {
 }
 
 function loadAboutContent() {
-  fetch(
-    "/thesis_project/backend/db-files/content-management.php?action=get_about_sections"
-  )
-    .then((response) => response.json())
+  fetch(`backend/db-files/content-management.php?action=get_about_sections`)
+    .then(async (response) => {
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error("Invalid JSON response: " + text);
+      }
+    })
     .then((data) => {
       if (data.success) {
         displayAboutContent(data.sections);
@@ -1607,10 +1702,15 @@ function editFaq(id, event) {
   document.getElementById("faqId").value = id;
   document.getElementById("faqModal").style.display = "block";
 
-  fetch(
-    `/thesis_project/backend/db-files/content-management.php?action=get_faqs`
-  )
-    .then((response) => response.json())
+  fetch(`backend/db-files/content-management.php?action=get_faqs`)
+    .then(async (response) => {
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error("Invalid JSON response: " + text);
+      }
+    })
     .then((data) => {
       if (data.success) {
         const faq = data.faqs.find((f) => f.id === parseInt(id));
@@ -1637,10 +1737,15 @@ function toggleFaq(element) {
 }
 
 function loadFaqContent() {
-  fetch(
-    "/thesis_project/backend/db-files/content-management.php?action=get_faqs"
-  )
-    .then((response) => response.json())
+  fetch(`backend/db-files/content-management.php?action=get_faqs`)
+    .then(async (response) => {
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error("Invalid JSON response: " + text);
+      }
+    })
     .then((data) => {
       if (data.success) {
         displayFaqContent(data.faqs);
@@ -1848,14 +1953,21 @@ function assignPatient(patientId) {
     return;
   }
 
-  fetch("/thesis_project/backend/db-files/patient-assignment.php", {
+  fetch(`backend/db-files/patient-assignment.php`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: `action=assign&patient_id=${patientId}&doctor_id=${doctorId}`,
   })
-    .then((response) => response.json())
+    .then(async (response) => {
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error("Invalid JSON response: " + text);
+      }
+    })
     .then((data) => {
       if (data.success) {
         showNotification("Patient assigned successfully!", "success");
@@ -1874,14 +1986,21 @@ function assignPatient(patientId) {
 }
 
 function removePatient(patientId) {
-  fetch("/thesis_project/backend/db-files/patient-assignment.php", {
+  fetch(`backend/db-files/patient-assignment.php`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: `action=remove&patient_id=${patientId}`,
   })
-    .then((response) => response.json())
+    .then(async (response) => {
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error("Invalid JSON response: " + text);
+      }
+    })
     .then((data) => {
       if (data.success) {
         showNotification("Patient removed successfully!", "success");
@@ -1929,9 +2048,16 @@ function viewPatientRecords(patientId) {
   modal.style.display = "block";
 
   fetch(
-    `/thesis_project/backend/db-files/observations.php?action=get_all&patient_id=${patientId}`
+    `backend/db-files/observations.php?action=get_all&patient_id=${patientId}`
   )
-    .then((response) => response.json())
+    .then(async (response) => {
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error("Invalid JSON response: " + text);
+      }
+    })
     .then((data) => {
       if (data.success) {
         if (data.observations.length === 0) {

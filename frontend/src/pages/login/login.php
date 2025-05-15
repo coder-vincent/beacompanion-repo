@@ -39,9 +39,7 @@
 
                 <div class="user-login-form">
                     <?php
-
-                    include($_SERVER['DOCUMENT_ROOT'] . '/thesis_project/frontend/src/components/form/login-form/login-form.php');
-
+                    include('../../components/form/login-form/login-form.php');
                     ?>
                 </div>
             </div>

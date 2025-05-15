@@ -31,9 +31,7 @@
 
                 <div class="user-create-form">
                     <?php
-
-                    include($_SERVER['DOCUMENT_ROOT'] . '/thesis_project/frontend/src/components/form/signup-form/signup-form.php');
-
+                    include('../../components/form/signup-form/signup-form.php');
                     ?>
                 </div>
             </div>

@@ -74,7 +74,7 @@ $email = $_SESSION['user_reset_pass']['email'] ?? '';
 
                 <div class="user-reset-password-form">
                     <?php
-                    include($_SERVER['DOCUMENT_ROOT'] . '/thesis_project/frontend/src/components/form/reset-password-form/reset-password-form.php');
+                    include('../../components/form/reset-password-form/reset-password-form.php');
                     ?>
                 </div>
             </div>
