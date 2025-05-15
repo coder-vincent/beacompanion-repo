@@ -21,7 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['token'])) {
 
     if (!$user) {
         $_SESSION['error_message'] = 'The reset token is invalid or has expired. Please request a new one.';
-        header('Location: /thesis_project');
+        $basePath = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false) ? '/thesis_project' : '';
+        header('Location: ' . $basePath . '/');
         exit();
     }
 

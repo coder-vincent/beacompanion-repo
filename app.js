@@ -6,7 +6,6 @@ function getBasePath() {
   const isLocal = window.location.hostname === "localhost";
   const pathname = window.location.pathname;
 
-  // If we're in a subdirectory, extract it from the pathname
   const pathParts = pathname.split("/").filter(Boolean);
   if (pathParts.length > 0) {
     return "/" + pathParts[0];
@@ -484,10 +483,6 @@ function attachFormAction() {
               }
               setTimeout(() => {
                 loadPage("loginPage");
-
-                const isLocal = window.location.hostname === "localhost";
-                const basePath = isLocal ? "/thesis_project" : "";
-
                 history.replaceState(null, "", basePath + "/");
               }, 2000);
               return;
